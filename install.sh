@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 全域意图对齐与完全自主进化协议 - 一键安装脚本
+# OpenClaw 意图对齐 Skill - 一键安装脚本
 # 适用于 macOS 和 Linux
 
 set -e
@@ -16,8 +16,8 @@ NC='\033[0m' # No Color
 
 # 配置
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLAUDE_DIR="$HOME/.claude"
-PROJECT_NAME="全域意图对齐与自主进化"
+OPENCLAW_DIR="$HOME/.openclaw"
+EXTENSION_DIR="$OPENCLAW_DIR/extensions/intent-alignment"
 
 # 日志函数
 log_info() {
@@ -50,21 +50,20 @@ show_welcome() {
 
 ╔════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║     全域意图对齐与完全自主进化协议 - 一键安装               ║
+║     OpenClaw 意图对齐 Skill - 一键安装                      ║
 ║                                                              ║
-║     基于强化学习的 AI 协作系统                                ║
-║     支持深度模式（历史数据建模）和快速模式（主动访谈）         ║
+║     简简单单，让OpenClaw更懂你                                ║
+║     自动学习你的偏好并自适应优化                              ║
 ║                                                              ║
 ╚════════════════════════════════════════════════════════════╝
 
 本安装脚本将会：
-  1. 安装核心文件（USER.md, SOUL.md, AGENTS.md）
-  2. 安装 OpenClaw Skill
-  3. 配置奖励系统
-  4. 设置自动化脚本
-  5. 引导初始化
+  1. 创建扩展目录
+  2. 安装意图对齐Skill
+  3. 安装默认配置
+  4. 验证安装
 
-预计时间：2-3 分钟
+预计时间：30 秒
 
 按任意键继续...
 EOF
@@ -86,34 +85,12 @@ check_requirements() {
         exit 1
     fi
 
-    # 检查必需命令
-    local required_commands=("jq" "git")
-    for cmd in "${required_commands[@]}"; do
-        if ! command -v "$cmd" &> /dev/null; then
-            log_warning "缺少必需命令: $cmd"
-            log_info "正在尝试安装 $cmd..."
-
-            if [ "$os" = "Darwin" ]; then
-                # macOS
-                if command -v brew &> /dev/null; then
-                    brew install "$cmd"
-                else
-                    log_error "请先安装 Homebrew: https://brew.sh"
-                    exit 1
-                fi
-            else
-                # Linux
-                if command -v apt-get &> /dev/null; then
-                    sudo apt-get update && sudo apt-get install -y "$cmd"
-                elif command -v yum &> /dev/null; then
-                    sudo yum install -y "$cmd"
-                else
-                    log_error "无法自动安装 $cmd，请手动安装"
-                    exit 1
-                fi
-            fi
-        fi
-    done
+    # 检查OpenClaw目录
+    if [ ! -d "$OPENCLAW_DIR" ]; then
+        log_warning "未检测到OpenClaw目录"
+        log_info "创建OpenClaw目录: $OPENCLAW_DIR"
+        mkdir -p "$OPENCLAW_DIR"
+    fi
 
     log_success "✅ 系统要求检查通过"
 }
@@ -123,11 +100,9 @@ create_directories() {
     log_step "创建目录结构"
 
     local dirs=(
-        "$CLAUDE_DIR"
-        "$CLAUDE_DIR/skills"
-        "$CLAUDE_DIR/config"
-        "$CLAUDE_DIR/backups"
-        "$CLAUDE_DIR/scripts"
+        "$EXTENSION_DIR"
+        "$EXTENSION_DIR/skills"
+        "$EXTENSION_DIR/config"
     )
 
     for dir in "${dirs[@]}"; do
@@ -140,129 +115,98 @@ create_directories() {
     log_success "✅ 目录结构创建完成"
 }
 
-# 安装核心文件
-install_core_files() {
-    log_step "安装核心文件"
-
-    # 复制核心文件
-    cp "$SCRIPT_DIR/USER.md" "$CLAUDE_DIR/"
-    cp "$SCRIPT_DIR/SOUL.md" "$CLAUDE_DIR/"
-    cp "$SCRIPT_DIR/AGENTS.md" "$CLAUDE_DIR/"
-
-    log_success "✅ 核心文件安装完成"
-}
-
-# 安装 Skill
+# 安装Skill
 install_skill() {
-    log_step "安装 OpenClaw Skill"
+    log_step "安装意图对齐Skill"
 
-    # 复制 Skill 文件
-    cp "$SCRIPT_DIR/skills/全域意图对齐与自主进化.md" "$CLAUDE_DIR/skills/"
-
-    log_success "✅ Skill 安装完成"
+    # 复制Skill文件
+    if [ -f "$SCRIPT_DIR/skills/意图对齐.md" ]; then
+        cp "$SCRIPT_DIR/skills/意图对齐.md" "$EXTENSION_DIR/skills/"
+        log_success "✅ Skill文件安装完成"
+    else
+        log_error "未找到Skill文件: $SCRIPT_DIR/skills/意图对齐.md"
+        exit 1
+    fi
 }
 
 # 安装配置文件
-install_configs() {
+install_config() {
     log_step "安装配置文件"
 
-    # 复制配置文件
-    cp "$SCRIPT_DIR/config/reward-config.json" "$CLAUDE_DIR/config/"
-    cp "$SCRIPT_DIR/config/heartbeat-state.json" "$CLAUDE_DIR/config/"
-    cp "$SCRIPT_DIR/config/interview-questions.json" "$CLAUDE_DIR/config/"
-
-    log_success "✅ 配置文件安装完成"
-}
-
-# 安装脚本
-install_scripts() {
-    log_step "安装自动化脚本"
-
-    # 复制脚本
-    cp "$SCRIPT_DIR/scripts/daily-evolution.sh" "$CLAUDE_DIR/scripts/"
-    cp "$SCRIPT_DIR/scripts/weekly-pruning.sh" "$CLAUDE_DIR/scripts/"
-    cp "$SCRIPT_DIR/scripts/quick-mode-init.sh" "$CLAUDE_DIR/scripts/"
-
-    # 添加执行权限
-    chmod +x "$CLAUDE_DIR/scripts/"*.sh
-
-    log_success "✅ 自动化脚本安装完成"
-}
-
-# 初始化数据文件
-init_data_files() {
-    log_step "初始化数据文件"
-
-    # 复制优化日志（如果不存在）
-    if [ ! -f "$CLAUDE_DIR/backups/optimization-log.json" ]; then
-        cp "$SCRIPT_DIR/backups/optimization-log.json" "$CLAUDE_DIR/backups/"
-    fi
-
-    log_success "✅ 数据文件初始化完成"
-}
-
-# 配置定时任务（可选）
-setup_cron() {
-    log_step "配置定时任务（可选）"
-
-    echo ""
-    log_info "是否配置定时任务？"
-    echo "  - 每日优化：每天 06:00 自动执行"
-    echo "  - 每周修剪：每周日 09:00 自动执行"
-    echo ""
-    echo -n "配置定时任务？[y/N]: "
-    read -r answer
-
-    if [[ "$answer" =~ ^[Yy]$ ]]; then
-        # 获取脚本路径
-        local daily_script="$CLAUDE_DIR/scripts/daily-evolution.sh"
-        local weekly_script="$CLAUDE_DIR/scripts/weekly-pruning.sh"
-
-        # 创建临时 crontab
-        local temp_cron=$(mktemp)
-
-        # 添加现有 crontab（如果存在）
-        if crontab -l &> /dev/null; then
-            crontab -l > "$temp_cron"
-        fi
-
-        # 添加新任务
-        echo "# 全域意图对齐与自主进化 - 每日优化" >> "$temp_cron"
-        echo "0 6 * * * $daily_script >> $CLAUDE_DIR/logs/daily.log 2>&1" >> "$temp_cron"
-        echo "" >> "$temp_cron"
-        echo "# 全域意图对齐与自主进化 - 每周修剪" >> "$temp_cron"
-        echo "0 9 * * 0 $weekly_script >> $CLAUDE_DIR/logs/weekly.log 2>&1" >> "$temp_cron"
-
-        # 安装 crontab
-        crontab "$temp_cron"
-        rm "$temp_cron"
-
-        log_success "✅ 定时任务配置完成"
+    # 复制配置文件（如果存在）
+    if [ -f "$SCRIPT_DIR/config/config.json" ]; then
+        cp "$SCRIPT_DIR/config/config.json" "$EXTENSION_DIR/config/"
+        log_success "✅ 配置文件安装完成"
     else
-        log_info "跳过定时任务配置"
+        log_warning "未找到配置文件，创建默认配置..."
+        mkdir -p "$EXTENSION_DIR/config"
+        cat > "$EXTENSION_DIR/config/config.json" <<EOF
+{
+  "version": "1.0.0",
+  "last_updated": "2026-02-28T18:00:00Z",
+  "preferences": {
+    "automation_level": "balanced",
+    "communication_style": "direct"
+  }
+}
+EOF
+        log_success "✅ 默认配置已创建"
     fi
 }
 
-# 运行初始化向导
-run_init_wizard() {
-    log_step "运行初始化向导"
+# 创建README
+create_readme() {
+    log_step "创建使用说明"
 
-    echo ""
-    log_info "现在需要选择初始化模式："
-    echo "  1. 深度模式（有历史数据）- 自动建模"
-    echo "  2. 快速模式（新设备）- 主动访谈"
-    echo ""
-    echo -n "请选择模式 [1/2]: "
-    read -r mode
+    cat > "$EXTENSION_DIR/README.md" <<EOF
+# 意图对齐 Skill
 
-    if [ "$mode" = "1" ]; then
-        log_info "启动深度模式..."
-        # 深度模式需要扫描历史数据，这里暂时简化处理
-        log_warning "深度模式需要手动扫描历史数据"
-        log_info "你可以稍后运行：~/.claude/scripts/quick-mode-init.sh"
+OpenClaw意图对齐扩展，帮助你更好地使用OpenClaw。
+
+## 使用方法
+
+在OpenClaw中调用：
+- "优化我的工作流"
+- "意图对齐"
+- "分析我的偏好"
+
+## 配置文件
+
+配置位置：~/.openclaw/extensions/intent-alignment/config/config.json
+
+## 卸载
+
+删除目录：rm -rf ~/.openclaw/extensions/intent-alignment
+EOF
+
+    log_success "✅ 使用说明已创建"
+}
+
+# 验证安装
+verify_installation() {
+    log_step "验证安装"
+
+    local all_good=true
+
+    # 检查文件是否存在
+    if [ -f "$EXTENSION_DIR/skills/意图对齐.md" ]; then
+        log_success "✅ Skill文件已安装"
     else
-        log_info "启动快速模式初始化..."
-        bash "$CLAUDE_DIR/scripts/quick-mode-init.sh"
+        log_error "❌ Skill文件缺失"
+        all_good=false
+    fi
+
+    if [ -f "$EXTENSION_DIR/config/config.json" ]; then
+        log_success "✅ 配置文件已安装"
+    else
+        log_error "❌ 配置文件缺失"
+        all_good=false
+    fi
+
+    if [ "$all_good" = true ]; then
+        return 0
+    else
+        return 1
     fi
 }
 
@@ -274,29 +218,26 @@ show_completion() {
 ║          安装完成！                                         ║
 ╚════════════════════════════════════════════════════════════╝
 
-✅ 核心文件已安装到: $CLAUDE_DIR
-✅ Skill 已安装
-✅ 自动化脚本已就绪
+✅ 意图对齐Skill已安装到: $EXTENSION_DIR
+✅ 配置文件已就绪
 
-📚 快速开始:
-  1. 查看文档: cat $SCRIPT_DIR/README.md
-  2. 主动优化: bash $CLAUDE_DIR/scripts/daily-evolution.sh
-  3. 每周修剪: bash $CLAUDE_DIR/scripts/weekly-pruning.sh
+📚 使用方法:
+  在OpenClaw中调用：
+  - "优化我的工作流"
+  - "意图对齐"
+  - "分析我的偏好"
 
-📂 重要文件:
-  - 用户画像: $CLAUDE_DIR/USER.md
-  - 系统宪法: $CLAUDE_DIR/SOUL.md
-  - 兵力编排: $CLAUDE_DIR/AGENTS.md
-  - 奖励配置: $CLAUDE_DIR/config/reward-config.json
+📂 安装位置:
+  - Skill: $EXTENSION_DIR/skills/意图对齐.md
+  - 配置: $EXTENSION_DIR/config/config.json
 
-🔄 后续步骤:
-  1. 根据你的使用习惯调整配置文件
-  2. 运行初始化向导（如果还未运行）
-  3. 开始使用 AI 协作系统
+🔄 配置调整:
+  编辑配置文件：vim $EXTENSION_DIR/config/config.json
 
-📖 完整文档: $SCRIPT_DIR/README.md
+📖 完整文档:
+  cat $SCRIPT_DIR/README.md
 
-感谢使用全域意图对齐与完全自主进化协议！
+感谢使用意图对齐Skill！
 
 EOF
 }
@@ -306,16 +247,17 @@ main() {
     show_welcome
     check_requirements
     create_directories
-    install_core_files
     install_skill
-    install_configs
-    install_scripts
-    init_data_files
-    setup_cron
-    run_init_wizard
-    show_completion
+    install_config
+    create_readme
 
-    log_success "🎉 安装完成！"
+    if verify_installation; then
+        show_completion
+        log_success "🎉 安装完成！"
+    else
+        log_error "❌ 安装验证失败，请检查错误信息"
+        exit 1
+    fi
 }
 
 # 执行
