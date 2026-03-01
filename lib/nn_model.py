@@ -105,32 +105,45 @@ class PolicyNetworkPyTorch:
             probs = {name: F.softmax(head_logits, dim=-1).numpy() for name, head_logits in logits.items()}
             return probs
 
-    def sample_action(self, state: np.ndarray, explore: bool = True) -> Tuple[int, np.ndarray]:
+    def sample_action(self, state: np.ndarray, explore: bool = True) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
         """采样动作"""
         action_probs = self.get_action_probs(state)
 
         if explore and np.random.random() < 0.1:
-            action_idx = np.random.randint(self.action_dim)
+            action_indices = np.array([
+                np.random.randint(self.head_dims["agent"]),
+                np.random.randint(self.head_dims["automation"]),
+                np.random.randint(self.head_dims["style"]),
+                np.random.randint(self.head_dims["confirm"])
+            ], dtype=int)
         else:
-            action_idx = np.random.choice(self.action_dim, p=action_probs)
+            action_indices = np.array([
+                np.random.choice(self.head_dims["agent"], p=action_probs["agent"]),
+                np.random.choice(self.head_dims["automation"], p=action_probs["automation"]),
+                np.random.choice(self.head_dims["style"], p=action_probs["style"]),
+                np.random.choice(self.head_dims["confirm"], p=action_probs["confirm"])
+            ], dtype=int)
 
-        return action_idx, action_probs
+        return action_indices, action_probs
 
-    def update(self, state: np.ndarray, action_idx: int, advantage: float) -> float:
+    def update(self, state: np.ndarray, action_indices: np.ndarray, advantage: float) -> float:
         """更新策略网络"""
         state_tensor = torch.FloatTensor(state).unsqueeze(0)
-        logits = self.model(state_tensor)
+        logits = self._forward_logits(state_tensor)
 
-        # 计算损失
-        log_prob = F.log_softmax(logits, dim=-1)
-        loss = -log_prob[0, action_idx] * advantage
+        # 计算损失（多头累加）
+        loss = 0.0
+        head_order = ["agent", "automation", "style", "confirm"]
+        for head_idx, head_name in enumerate(head_order):
+            log_prob = F.log_softmax(logits[head_name], dim=-1)
+            loss = loss - log_prob[0, int(action_indices[head_idx])] * advantage
 
         # 反向传播
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
-        return loss.item()
+        return float(loss.item())
 
     def save(self, path: str) -> None:
         """保存模型"""
