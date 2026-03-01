@@ -19,9 +19,26 @@
 
 ## Demo
 
-![OpenClaw Alignment Demo](demo.gif)
+### Quick Start Demo
+
+![OpenClaw Alignment Quick Start](demo.gif)
 
 > Watch how easy it is to get started with OpenClaw Alignment!
+
+### Disaster Recovery Demo
+
+![OpenClaw Alignment Disaster Recovery](demo.gif)
+
+> **场景对比**：未受保护的 Agent 失控（🔴）vs OpenClaw Alignment 阻断（🟢）
+
+The disaster recovery demo showcases:
+
+- **Scene A (Red)**: Unprotected agent receiving vague instruction "clean-workspace --aggressive" and executing dangerous `rm -rf` commands
+- **Scene B (Green)**: OpenClaw Alignment Commander intercepting the same instruction by:
+  - Reading SOUL.md boundary rules
+  - Detecting high-risk intent
+  - Triggering fail-closed safety mechanism
+  - Requesting user confirmation
 
 ## Installation
 
