@@ -17,6 +17,12 @@
 - Python: 3.10, 3.11, 3.12, 3.13
 - OS: Windows, macOS, Linux
 
+## Demo
+
+![OpenClaw Alignment Demo](demo.gif)
+
+> Watch how easy it is to get started with OpenClaw Alignment!
+
 ## Installation
 
 ### 1) PyPI (Recommended)
