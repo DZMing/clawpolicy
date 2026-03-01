@@ -344,28 +344,30 @@ class AlignmentAgent:
         state_vector = state.to_vector()
 
         # 采样动作索引
-        action_idx, action_probs = self.policy_net.sample_action(state_vector, explore)
+        action_indices, action_probs = self.policy_net.sample_action(state_vector, explore)
 
         # 将动作索引转换为Action对象
-        action = self._decode_action(action_idx)
+        action = self.decode_action_indices(action_indices)
 
         return action
 
-    def _decode_action(self, action_idx: int) -> Action:
+    def encode_action_indices(self, action: Action) -> np.ndarray:
+        """将Action编码为索引向量"""
+        agent_idx = [AgentType.CLAUDE, AgentType.CODEX, AgentType.GEMINI].index(action.agent_selection)
+        automation_idx = [AutomationLevel.LOW, AutomationLevel.MEDIUM, AutomationLevel.HIGH].index(action.automation_level)
+        style_idx = [CommunicationStyle.BRIEF, CommunicationStyle.DETAILED, CommunicationStyle.INTERACTIVE].index(action.communication_style)
+        confirm_idx = 1 if action.confirmation_needed else 0
+
+        return np.array([agent_idx, automation_idx, style_idx, confirm_idx], dtype=int)
+
+    def decode_action_indices(self, action_indices: np.ndarray) -> Action:
         """将动作索引解码为Action对象"""
-        # 简化的解码：将索引映射到动作
-        # 实际应用中需要更复杂的映射
+        agent_idx, automation_idx, style_idx, confirm_idx = [int(x) for x in action_indices]
 
-        # 分解action_idx为各个维度
-        agent_idx = action_idx // 9  # 3*3
-        automation_idx = (action_idx % 9) // 3  # 3
-        style_idx = action_idx % 3  # 3
-        confirm = (action_idx % 2) == 0  # 偶数需要确认
-
-        # 映射到枚举
-        agent_type = [AgentType.CLAUDE, AgentType.CODEX, AgentType.GEMINI][agent_idx % 3]
-        automation = [AutomationLevel.LOW, AutomationLevel.MEDIUM, AutomationLevel.HIGH][automation_idx % 3]
+        agent_type = [AgentType.CLAUDE, AgentType.CODEX, AgentType.GEMINI][agent_idx]
+        automation = [AutomationLevel.LOW, AutomationLevel.MEDIUM, AutomationLevel.HIGH][automation_idx]
         style = [CommunicationStyle.BRIEF, CommunicationStyle.DETAILED, CommunicationStyle.INTERACTIVE][style_idx]
+        confirm = bool(confirm_idx)
 
         return Action(
             agent_selection=agent_type,
@@ -396,7 +398,7 @@ class AlignmentAgent:
         # 逐步更新
         for i in range(len(trajectory)):
             state = trajectory.states[i]
-            action_idx = np.argmax(trajectory.actions[i])  # 从one-hot获取索引
+            action_indices = trajectory.actions[i]
             reward = trajectory.rewards[i]
             next_state = trajectory.next_states[i]
             done = trajectory.dones[i]
@@ -412,7 +414,7 @@ class AlignmentAgent:
             advantage = target_value - current_value
 
             # 更新Actor
-            actor_loss = self.policy_net.update(state, action_idx, advantage, self.actor_lr)
+            actor_loss = self.policy_net.update(state, action_indices, advantage, self.actor_lr)
             total_actor_loss += actor_loss
 
             # 更新Critic
@@ -547,9 +549,7 @@ def main():
 
             # 记录轨迹
             trajectory.states.append(state.to_vector())
-            trajectory.actions.append(action.to_vector(
-                env.AGENT_MAP, env.AUTOMATION_MAP, env.STYLE_MAP
-            ))
+            trajectory.actions.append(agent.encode_action_indices(action))
             trajectory.rewards.append(reward)
             trajectory.dones.append(done)
             trajectory.next_states.append(next_state.to_vector())
