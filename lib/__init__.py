@@ -55,6 +55,9 @@ from .paths import (
     resolve_model_dir,
 )
 
+# CLI 模块
+from .cli import OpenClawAlignmentCLI
+
 __all__ = [
     # Phase 1
     "RewardSignal", "RewardCalculator",
@@ -77,6 +80,9 @@ __all__ = [
     "JITOptimizer", "PerformanceOptimizer",
     "get_config_dir", "get_cache_dir", "get_state_dir",
     "resolve_config_path", "resolve_model_dir",
+
+    # CLI
+    "OpenClawAlignmentCLI",
 ]
 
 __version__ = "1.0.0"

@@ -54,6 +54,9 @@ dev = [
 ]
 
 [project.scripts]
+# 主 CLI 命令（新）
+openclaw-align = "lib.cli:main"
+# 兼容旧命令
 openclaw-alignment = "lib.integration:main"
 
 [tool.setuptools]

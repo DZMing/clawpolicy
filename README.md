@@ -45,6 +45,70 @@ Development install:
 python3 scripts/install.py --dev --editable
 ```
 
+## Quick Start
+
+Get started with OpenClaw Alignment in three simple steps:
+
+### Step 1: Install
+
+```bash
+pip install openclaw-alignment
+```
+
+### Step 2: Initialize
+
+```bash
+# Initialize in current directory
+openclaw-align init
+
+# Or initialize in a specific directory
+openclaw-align init ~/projects/my-project
+```
+
+This creates a `.openclaw_memory` folder with three configuration files:
+
+- **USER.md** - Your personal preferences (tech stack, coding style, work habits)
+- **SOUL.md** - System constitution (principles, boundaries, ethics)
+- **AGENTS.md** - Tool dispatch configuration (available AI agents and strategies)
+
+### Step 3: Customize
+
+Edit the generated files to match your needs:
+
+```bash
+# Edit your personal profile
+vim .openclaw_memory/USER.md
+
+# Review system principles
+vim .openclaw_memory/SOUL.md
+
+# Check available agents
+vim .openclaw_memory/AGENTS.md
+```
+
+### Step 4: Analyze (Optional)
+
+Let the system learn from your Git history:
+
+```bash
+openclaw-align analyze
+```
+
+### What's Next?
+
+After initialization, the system will:
+
+✅ Learn your coding preferences from Git history
+✅ Recommend the best AI agent for each task
+✅ Adapt to your workflow automatically
+✅ Respect the boundaries defined in SOUL.md
+
+### Status Check
+
+```bash
+openclaw-align status
+```
+
 ## Quick Verification
 
 ```bash
