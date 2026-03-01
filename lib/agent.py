@@ -168,10 +168,11 @@ class PolicyNetwork:
     def save(self, path: str) -> None:
         """保存模型参数"""
         params = {
-            "weights": self.weights.tolist(),
-            "bias": self.bias.tolist(),
+            "weights": {name: w.tolist() for name, w in self.weights.items()},
+            "bias": {name: b.tolist() for name, b in self.bias.items()},
             "state_dim": self.state_dim,
-            "action_dim": self.action_dim
+            "action_dim": self.action_dim,
+            "head_dims": self.head_dims
         }
 
         path = Path(path).expanduser()
@@ -190,10 +191,11 @@ class PolicyNetwork:
         with open(path, 'r') as f:
             params = json.load(f)
 
-        self.weights = np.array(params["weights"])
-        self.bias = np.array(params["bias"])
+        self.weights = {name: np.array(w) for name, w in params["weights"].items()}
+        self.bias = {name: np.array(b) for name, b in params["bias"].items()}
         self.state_dim = params["state_dim"]
         self.action_dim = params["action_dim"]
+        self.head_dims = params.get("head_dims", self.head_dims)
 
 
 class ValueNetwork:
