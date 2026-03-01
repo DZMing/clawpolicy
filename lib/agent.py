@@ -44,7 +44,7 @@ class PolicyNetwork:
     Phase 2: 可选神经网络（PyTorch）
     """
 
-    def __init__(self, state_dim: int, action_dim: int, hidden_dim: int = 64):
+    def __init__(self, state_dim: int, action_dim: int = 11, hidden_dim: int = 64):
         """
         初始化策略网络
 
@@ -57,13 +57,30 @@ class PolicyNetwork:
         self.action_dim = action_dim
         self.hidden_dim = hidden_dim
 
-        # Phase 1: 线性模型参数
-        self.weights = np.random.randn(state_dim, action_dim) * 0.01
-        self.bias = np.zeros(action_dim)
+        # 多头动作空间
+        self.head_dims = {
+            "agent": 3,
+            "automation": 3,
+            "style": 3,
+            "confirm": 2
+        }
 
-    def forward(self, state: np.ndarray) -> np.ndarray:
-        """前向传播：计算logits"""
-        return state @ self.weights + self.bias
+        # Phase 1: 线性模型参数（多头）
+        self.weights = {
+            name: np.random.randn(state_dim, dim) * 0.01
+            for name, dim in self.head_dims.items()
+        }
+        self.bias = {
+            name: np.zeros(dim)
+            for name, dim in self.head_dims.items()
+        }
+
+    def forward(self, state: np.ndarray) -> Dict[str, np.ndarray]:
+        """前向传播：计算各头logits"""
+        return {
+            name: state @ self.weights[name] + self.bias[name]
+            for name in self.head_dims
+        }
 
     def softmax(self, logits: np.ndarray) -> np.ndarray:
         """Softmax激活函数"""
@@ -71,12 +88,12 @@ class PolicyNetwork:
         exp_logits = np.exp(logits - np.max(logits))
         return exp_logits / np.sum(exp_logits)
 
-    def get_action_probs(self, state: np.ndarray) -> np.ndarray:
-        """获取动作概率分布"""
+    def get_action_probs(self, state: np.ndarray) -> Dict[str, np.ndarray]:
+        """获取动作概率分布（多头）"""
         logits = self.forward(state)
-        return self.softmax(logits)
+        return {name: self.softmax(head_logits) for name, head_logits in logits.items()}
 
-    def sample_action(self, state: np.ndarray, explore: bool = True) -> Tuple[int, np.ndarray]:
+    def sample_action(self, state: np.ndarray, explore: bool = True) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
         """
         采样动作
 
@@ -90,8 +107,13 @@ class PolicyNetwork:
         action_probs = self.get_action_probs(state)
 
         if explore and np.random.random() < 0.1:  # 10% epsilon-greedy
-            # 随机探索
-            action_idx = np.random.randint(self.action_dim)
+            # 随机探索（每个头独立随机）
+            action_indices = np.array([
+                np.random.randint(self.head_dims["agent"]),
+                np.random.randint(self.head_dims["automation"]),
+                np.random.randint(self.head_dims["style"]),
+                np.random.randint(self.head_dims["confirm"])
+            ], dtype=int)
         else:
             # 按概率采样
             action_idx = np.random.choice(self.action_dim, p=action_probs)
