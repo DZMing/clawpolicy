@@ -1,0 +1,7 @@
+{
+  "episode_count": 1,
+  "total_steps": 1,
+  "gamma": 0.99,
+  "actor_lr": 0.01,
+  "critic_lr": 0.01
+}
