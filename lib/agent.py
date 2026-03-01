@@ -139,9 +139,7 @@ class PolicyNetwork:
         Returns:
             损失值
         """
-        # 计算梯度
         action_probs = self.get_action_probs(state)
-        log_prob = np.log(action_probs[action_idx] + 1e-10)
 
         total_loss = 0.0
         head_order = ["agent", "automation", "style", "confirm"]
