@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-核心契约一致性测试
+Core Contract Conformance Testing
 """
 
 from lib.agent import PolicyNetwork

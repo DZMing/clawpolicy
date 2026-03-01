@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-强化学习交互环境 - OpenClaw交互环境
+Reinforcement learning interactive environment - OpenClawinteractive environment
 
-定义状态空间和动作空间，实现OpenClaw交互的OpenAI Gym风格接口：
-- state: 任务上下文（task_type, tech_stack, user_mood等）
-- action: Agent选择（agent_selection, automation_level等）
-- reward: 从reward.RewardCalculator计算
-- done: 任务是否完成
+Define state space and action space，accomplishOpenClawinteractiveOpenAI Gymstyle interface：
+- state: task context（task_type, tech_stack, user_moodwait）
+- action: Agentchoose（agent_selection, automation_levelwait）
+- reward: fromreward.RewardCalculatorcalculate
+- done: Is the task completed?
 
-支持：
-- reset(task_context): 重置环境到新任务
-- step(action): 执行动作 → (next_state, reward, done, info)
-- _encode_state(context): 将上下文编码为状态向量
+support：
+- reset(task_context): Reset environment to new task
+- step(action): perform action → (next_state, reward, done, info)
+- _encode_state(context): Encode context into state vector
 """
 
 import numpy as np
@@ -37,64 +37,64 @@ from .reward import RewardCalculator
 
 
 class TaskType(Enum):
-    """任务类型枚举"""
-    T1 = "T1"  # 轻量：<20行
-    T2 = "T2"  # 中等：20-200行
-    T3 = "T3"  # 重度：200+行
-    T4 = "T4"  # 危险：核心系统
+    """Task type enum"""
+    T1 = "T1"  # lightweight：<20OK
+    T2 = "T2"  # medium：20-200OK
+    T3 = "T3"  # Severe：200+OK
+    T4 = "T4"  # Danger：core system
 
 
 class AgentType(Enum):
-    """Agent类型枚举"""
+    """Agenttype enum"""
     CLAUDE = "claude"
     CODEX = "codex"
     GEMINI = "gemini"
 
 
 class AutomationLevel(Enum):
-    """自动化级别枚举"""
-    LOW = "low"  # 需要频繁确认
-    MEDIUM = "medium"  # 部分自动化
-    HIGH = "high"  # 高度自动化
+    """Automation level enumeration"""
+    LOW = "low"  # Requires frequent confirmation
+    MEDIUM = "medium"  # Partially automated
+    HIGH = "high"  # Highly automated
 
 
 class CommunicationStyle(Enum):
-    """沟通风格枚举"""
-    BRIEF = "brief"  # 简洁
-    DETAILED = "detailed"  # 详细
-    INTERACTIVE = "interactive"  # 交互式
+    """communication style enum"""
+    BRIEF = "brief"  # concise
+    DETAILED = "detailed"  # detailed
+    INTERACTIVE = "interactive"  # interactive
 
 
 @dataclass
 class State:
-    """状态数据类"""
-    # 任务类型（one-hot编码）
+    """Status data class"""
+    # Task type（one-hotcoding）
     task_type: np.ndarray  # [4] (T1, T2, T3, T4)
 
-    # 技术栈（one-hot编码）
-    tech_stack: np.ndarray  # [N] 根据支持的技术数量
+    # technology stack（one-hotcoding）
+    tech_stack: np.ndarray  # [N] Based on the number of supported technologies
 
-    # 用户心情（one-hot编码）
+    # User mood（one-hotcoding）
     user_mood: np.ndarray  # [3] (focused, relaxed, stressed)
 
-    # 时间（归一化0-1）
+    # time（normalization0-1）
     time_of_day: float  # 0-1 (0=midnight, 0.5=noon, 1=midnight)
 
-    # 近期性能（归一化0-1）
+    # Recent performance（normalization0-1）
     recent_performance: float  # 0-1
 
-    # 历史Agent使用（统计）
-    agent_usage_history: Dict[str, int]  # agent名称 -> 使用次数
+    # historyAgentuse（statistics）
+    agent_usage_history: Dict[str, int]  # agentname -> Number of uses
 
     def to_vector(self) -> np.ndarray:
-        """将状态转换为向量"""
-        # 组合所有特征
-        vectors = [
+        """Convert state to vector"""
+        # Combine all features
+        vectors: List[np.ndarray] = [
             self.task_type.flatten(),
             self.tech_stack.flatten(),
             self.user_mood.flatten(),
-            [self.time_of_day],
-            [self.recent_performance]
+            np.array([self.time_of_day], dtype=float),
+            np.array([self.recent_performance], dtype=float),
         ]
 
         return np.concatenate(vectors)
@@ -109,17 +109,17 @@ class State:
 
 @dataclass
 class Action:
-    """动作数据类"""
-    agent_selection: AgentType  # 选择哪个Agent
-    automation_level: AutomationLevel  # 自动化级别
-    communication_style: CommunicationStyle  # 沟通风格
-    confirmation_needed: bool  # 是否需要确认
+    """action data class"""
+    agent_selection: AgentType  # Which one to chooseAgent
+    automation_level: AutomationLevel  # Automation level
+    communication_style: CommunicationStyle  # communication style
+    confirmation_needed: bool  # Do you need to confirm
 
     def to_vector(self, agent_map: Dict[AgentType, int],
                   automation_map: Dict[AutomationLevel, int],
                   style_map: Dict[CommunicationStyle, int],
                   confirm_map: Dict[bool, int]) -> np.ndarray:
-        """将动作转换为one-hot编码向量"""
+        """Convert action toone-hotencoding vector"""
         vector_size = (
             len(agent_map) +
             len(automation_map) +
@@ -129,18 +129,18 @@ class Action:
 
         vector = np.zeros(vector_size)
 
-        # Agent选择（one-hot）
+        # Agentchoose（one-hot）
         vector[agent_map[self.agent_selection]] = 1
 
-        # 自动化级别（one-hot）
+        # Automation level（one-hot）
         offset = len(agent_map)
         vector[offset + automation_map[self.automation_level]] = 1
 
-        # 沟通风格（one-hot）
+        # communication style（one-hot）
         offset += len(automation_map)
         vector[offset + style_map[self.communication_style]] = 1
 
-        # 确认标志
+        # Confirmation sign
         offset += len(style_map)
         vector[offset + confirm_map[self.confirmation_needed]] = 1.0
 
@@ -155,57 +155,57 @@ class Action:
 
 class InteractionEnvironment:
     """
-    OpenClaw交互环境
+    OpenClawinteractive environment
 
-    实现OpenAI Gym风格的环境接口：
-    - observation_space: 状态空间维度
-    - action_space: 动作空间维度
-    - reset(): 重置环境
-    - step(): 执行动作
+    accomplishOpenAI Gymstyle environment interface：
+    - observation_space: state space dimensions
+    - action_space: action space dimensions
+    - reset(): Reset environment
+    - step(): perform action
     """
 
-    # 状态空间定义
+    # State space definition
     STATE_DIM = STATE_DIMENSIONS.copy()
-    TOTAL_STATE_DIM = STATE_VECTOR_DIM  # 17维
+    TOTAL_STATE_DIM = STATE_VECTOR_DIM  # 17dimension
 
-    # 动作空间定义
+    # action space definition
     ACTION_DIM = {
         "agent_selection": ACTION_HEAD_DIMS["agent"],
         "automation_level": ACTION_HEAD_DIMS["automation"],
         "communication_style": ACTION_HEAD_DIMS["style"],
         "confirmation_needed": ACTION_HEAD_DIMS["confirm"],
     }
-    TOTAL_ACTION_DIM = ACTION_VECTOR_DIM  # 11维
+    TOTAL_ACTION_DIM = ACTION_VECTOR_DIM  # 11dimension
 
-    # 支持的技术栈
+    # Supported technology stack
     SUPPORTED_TECH = {name: idx for idx, name in enumerate(TECH_STACK_ORDER)}
 
-    # Agent映射
+    # Agentmapping
     AGENT_MAP = {AgentType(name): idx for idx, name in enumerate(AGENT_ORDER)}
 
-    # 自动化级别映射
+    # Automation level mapping
     AUTOMATION_MAP = {AutomationLevel(name): idx for idx, name in enumerate(AUTOMATION_ORDER)}
 
-    # 沟通风格映射
+    # communication style mapping
     STYLE_MAP = {CommunicationStyle(name): idx for idx, name in enumerate(STYLE_ORDER)}
 
-    # 确认标志映射
+    # Confirm flag mapping
     CONFIRM_MAP = {value: idx for idx, value in enumerate(CONFIRM_ORDER)}
 
     def __init__(self, config_path: Optional[str] = None):
         """
-        初始化环境
+        Initialize environment
 
         Args:
-            config_path: 模型配置路径（用于加载历史数据）
+            config_path: Model configuration path（Used to load historical data）
         """
         self.reward_calculator = RewardCalculator()
 
-        # 当前状态
+        # Current status
         self.current_state: Optional[State] = None
         self.current_task_context: Optional[Dict[str, Any]] = None
 
-        # 历史统计
+        # historical statistics
         self.episode_rewards: List[float] = []
         self.episode_count = 0
         self.agent_usage_history: Dict[str, int] = {
@@ -214,28 +214,28 @@ class InteractionEnvironment:
             "gemini": 0
         }
 
-        # 近期性能（初始为0.5表示中等）
+        # Recent performance（Initial is0.5Means medium）
         self.recent_performance: float = 0.5
 
-        # 尝试加载历史
+        # Try loading history
         if config_path:
             self._load_history(config_path)
 
     def reset(self, task_context: Dict[str, Any]) -> State:
         """
-        重置环境到新任务
+        Reset environment to new task
 
         Args:
-            task_context: 任务上下文，包含：
-                - task_type: 任务类型（"T1", "T2", "T3", "T4"）
-                - tech_stack: 使用的技术栈（list）
-                - user_mood: 用户心情（"focused", "relaxed", "stressed"，可选）
-                - time_of_day: 当前时间（0-24小时，可选）
+            task_context: task context，Include：
+                - task_type: Task type（"T1", "T2", "T3", "T4"）
+                - tech_stack: Technology stack used（list）
+                - user_mood: User mood（"focused", "relaxed", "stressed"，Optional）
+                - time_of_day: current time（0-24Hour，Optional）
 
         Returns:
-            初始状态
+            initial state
         """
-        # 解析任务类型
+        # Parse task type
         task_type_str = str(task_context.get("task_type", "T2")).upper()
         if task_type_str not in TaskType.__members__:
             task_type_str = "T2"
@@ -243,15 +243,15 @@ class InteractionEnvironment:
         task_context_normalized = dict(task_context)
         task_context_normalized["task_type"] = task_type_str
 
-        # 解析技术栈
+        # Analyze technology stack
         tech_stacks = task_context.get("tech_stack", ["python"])
         tech_stack_vector = self._encode_tech_stack(tech_stacks)
 
-        # 解析用户心情（默认为focused）
+        # Analyze user mood（Default isfocused）
         user_mood_str = task_context.get("user_mood", "focused")
         user_mood_vector = self._encode_user_mood(user_mood_str)
 
-        # 解析时间（默认为中午）
+        # parsing time（Default is noon）
         time_of_day = task_context.get("time_of_day", 12.0)
         try:
             time_of_day = float(time_of_day)
@@ -263,7 +263,7 @@ class InteractionEnvironment:
 
         self.current_task_context = task_context_normalized
 
-        # 创建状态
+        # Create status
         self.current_state = State(
             task_type=self._encode_task_type(task_type),
             tech_stack=tech_stack_vector,
@@ -277,15 +277,15 @@ class InteractionEnvironment:
 
     def step(self, action: Action, task_result: Dict[str, Any]) -> Tuple[State, float, bool, Dict[str, Any]]:
         """
-        执行动作
+        perform action
 
         Args:
-            action: 采取的动作
-            task_result: 任务执行结果，包含：
-                - duration: 任务耗时（秒）
-                - test_result: 测试结果
-                - user_feedback: 用户反馈
-                - metrics: 其他指标
+            action: action taken
+            task_result: Task execution results，Include：
+                - duration: Task time（Second）
+                - test_result: Test results
+                - user_feedback: User feedback
+                - metrics: Other indicators
 
         Returns:
             (next_state, reward, done, info)
@@ -293,11 +293,11 @@ class InteractionEnvironment:
         if self.current_state is None or self.current_task_context is None:
             raise ValueError("Environment not initialized, call reset() before step().")
 
-        # 1. 记录Agent使用
+        # 1. RecordAgentuse
         agent_name = action.agent_selection.value
         self.agent_usage_history[agent_name] += 1
 
-        # 2. 准备奖励计算的上下文
+        # 2. Prepare context for reward calculation
         reward_context = {
             "task_type": self.current_task_context.get("task_type", "T2"),
             "task_result": task_result,
@@ -306,13 +306,13 @@ class InteractionEnvironment:
             "metrics": task_result.get("metrics", {})
         }
 
-        # 3. 计算奖励
+        # 3. Calculate rewards
         reward = self.reward_calculator.calculate_reward(reward_context)
 
-        # 4. 更新近期性能（移动平均）
+        # 4. Update recent performance（moving average）
         self.recent_performance = 0.7 * self.recent_performance + 0.3 * reward
 
-        # 5. 准备下一个状态（保持当前上下文，但更新性能）
+        # 5. Prepare for next state（keep current context，But update performance）
         next_state = State(
             task_type=self.current_state.task_type.copy(),
             tech_stack=self.current_state.tech_stack.copy(),
@@ -324,13 +324,13 @@ class InteractionEnvironment:
 
         self.current_state = next_state
 
-        # 6. 检查episode是否结束
+        # 6. examineepisodeIs it over?
         done = task_result.get("completed", True)
         if done:
             self.episode_count += 1
             self.episode_rewards.append(float(reward))
 
-        # 7. 准备info
+        # 7. Prepareinfo
         info = {
             "action_taken": str(action),
             "agent_used": agent_name,
@@ -341,35 +341,35 @@ class InteractionEnvironment:
         return next_state, reward, done, info
 
     def _encode_task_type(self, task_type: TaskType) -> np.ndarray:
-        """将任务类型编码为one-hot向量"""
+        """Encode the task type asone-hotvector"""
         vector = np.zeros(self.STATE_DIM["task_type"])
         index = list(TaskType).index(task_type)
         vector[index] = 1.0
         return vector
 
     def _encode_tech_stack(self, tech_stacks: List[str]) -> np.ndarray:
-        """将技术栈编码为one-hot向量（支持多标签）"""
+        """Codify the technology stack asone-hotvector（Support multiple tags）"""
         vector = np.zeros(self.STATE_DIM["tech_stack"])
 
         for tech in tech_stacks:
             tech_lower = tech.lower()
-            # 检查直接匹配
+            # Check for direct matches
             if tech_lower in self.SUPPORTED_TECH:
                 vector[self.SUPPORTED_TECH[tech_lower]] = 1.0
-            # 检查部分匹配
+            # Check for partial matches
             else:
                 for supported_tech, idx in self.SUPPORTED_TECH.items():
                     if supported_tech in tech_lower:
                         vector[idx] = 1.0
 
-        # 如果没有匹配任何技术，默认python
+        # If no technology matches，defaultpython
         if not vector.any():
             vector[self.SUPPORTED_TECH["python"]] = 1.0
 
         return vector
 
     def _encode_user_mood(self, user_mood: str) -> np.ndarray:
-        """将用户心情编码为one-hot向量"""
+        """Encode user mood asone-hotvector"""
         moods = list(USER_MOOD_ORDER)
         vector = np.zeros(len(moods))
 
@@ -377,21 +377,21 @@ class InteractionEnvironment:
             index = moods.index(user_mood)
             vector[index] = 1.0
         else:
-            # 默认focused
+            # defaultfocused
             vector[0] = 1.0
 
         return vector
 
     def get_action_space_size(self) -> int:
-        """获取动作空间大小"""
+        """Get action space size"""
         return self.TOTAL_ACTION_DIM
 
     def get_state_space_size(self) -> int:
-        """获取状态空间大小"""
+        """Get the state space size"""
         return self.TOTAL_STATE_DIM
 
-    def save_history(self, path: str) -> None:
-        """保存历史记录"""
+    def save_history(self, path: str | Path) -> None:
+        """Save history"""
         history = {
             "episode_count": self.episode_count,
             "agent_usage_history": self.agent_usage_history,
@@ -399,20 +399,20 @@ class InteractionEnvironment:
             "reward_history": self.episode_rewards
         }
 
-        path = Path(path).expanduser()
-        path.parent.mkdir(parents=True, exist_ok=True)
+        history_path = Path(path).expanduser()
+        history_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(path, 'w') as f:
+        with open(history_path, 'w') as f:
             json.dump(history, f, indent=2)
 
-    def _load_history(self, path: str) -> None:
-        """加载历史记录"""
-        path = Path(path).expanduser()
+    def _load_history(self, path: str | Path) -> None:
+        """Load history"""
+        history_path = Path(path).expanduser()
 
-        if not path.exists():
+        if not history_path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(history_path, 'r') as f:
             history = json.load(f)
 
         self.episode_count = history.get("episode_count", 0)
@@ -422,26 +422,26 @@ class InteractionEnvironment:
 
 
 def main():
-    """测试交互环境"""
-    # 创建环境
+    """Test interactive environment"""
+    # Create environment
     env = InteractionEnvironment()
 
-    # 模拟任务上下文
+    # Simulate task context
     task_context = {
         "task_type": "T2",
         "tech_stack": ["python", "fastapi"],
         "user_mood": "focused",
-        "time_of_day": 14.0  # 下午2点
+        "time_of_day": 14.0  # afternoon2point
     }
 
-    # 重置环境
+    # Reset environment
     state = env.reset(task_context)
-    print(f"初始状态: {state}")
-    print(f"状态向量: {state.to_vector()}")
-    print(f"状态空间大小: {env.get_state_space_size()}")
-    print(f"动作空间大小: {env.get_action_space_size()}")
+    print(f"initial state: {state}")
+    print(f"state vector: {state.to_vector()}")
+    print(f"State space size: {env.get_state_space_size()}")
+    print(f"action space size: {env.get_action_space_size()}")
 
-    # 模拟动作
+    # simulate action
     action = Action(
         agent_selection=AgentType.CLAUDE,
         automation_level=AutomationLevel.MEDIUM,
@@ -449,11 +449,11 @@ def main():
         confirmation_needed=True
     )
 
-    print(f"\n采取动作: {action}")
+    print(f"\ntake action: {action}")
 
-    # 模拟任务结果
+    # Simulation task results
     task_result = {
-        "duration": 300,  # 5分钟
+        "duration": 300,  # 5minute
         "completed": True,
         "test_result": {
             "coverage": 85.0,
@@ -471,17 +471,17 @@ def main():
         }
     }
 
-    # 执行步骤
+    # Execution steps
     next_state, reward, done, info = env.step(action, task_result)
 
-    print(f"\n下一个状态: {next_state}")
-    print(f"奖励: {reward:.3f}")
-    print(f"完成: {done}")
+    print(f"\nnext state: {next_state}")
+    print(f"award: {reward:.3f}")
+    print(f"Finish: {done}")
     print(f"Info: {info}")
 
-    # 保存历史
+    # save history
     env.save_history("/tmp/openclaw_env_history.json")
-    print(f"\n历史已保存到 /tmp/openclaw_env_history.json")
+    print("\nHistory saved to /tmp/openclaw_env_history.json")
 
 
 if __name__ == "__main__":

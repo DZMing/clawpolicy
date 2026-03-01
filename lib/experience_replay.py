@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-经验回放缓冲区 - 提升样本效率
+Experience replay buffer - Improve sample efficiency
 
-存储和采样经验（state, action, reward, next_state, done），
-支持优先级采样和批量采样
+Storage and sampling experience（state, action, reward, next_state, done），
+Support priority sampling and batch sampling
 """
 
 import numpy as np
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple
 from dataclasses import dataclass
 import random
 
 
 @dataclass
 class Experience:
-    """单个经验"""
+    """single experience"""
     state: np.ndarray
     action: np.ndarray
     reward: float
     next_state: np.ndarray
     done: bool
-    priority: float = 1.0  # 优先级（用于优先级采样）
+    priority: float = 1.0  # priority（for priority sampling）
 
     def __repr__(self) -> str:
         return f"Experience(reward={self.reward:.3f}, done={self.done})"
@@ -28,49 +28,49 @@ class Experience:
 
 class ExperienceReplay:
     """
-    经验回放缓冲区
+    Experience replay buffer
 
-    功能：
-    - 存储经验
-    - 随机采样
-    - 优先级采样（可选）
-    - 批量采样
+    Function：
+    - Store experience
+    - random sampling
+    - priority sampling（Optional）
+    - Batch sampling
     """
 
     def __init__(self, capacity: int = 10000, use_prioritized: bool = False):
         """
-        初始化经验回放缓冲区
+        Initialize experience playback buffer
 
         Args:
-            capacity: 缓冲区容量
-            use_prioritized: 是否使用优先级采样
+            capacity: Buffer capacity
+            use_prioritized: Whether to use priority sampling
         """
         self.capacity = capacity
         self.use_prioritized = use_prioritized
 
-        # 存储经验的缓冲区
+        # Buffer for storing experience
         self.buffer: List[Experience] = []
         self.position = 0
 
-        # 优先级采样相关
+        # Priority sampling related
         self.priorities = np.zeros(capacity)
         self.max_priority = 1.0
-        self.alpha = 0.6  # 优先级指数
-        self.beta = 0.4   # 重要性采样指数
-        self.epsilon = 1e-6  # 避免零优先级
+        self.alpha = 0.6  # priority index
+        self.beta = 0.4   # importance sampling index
+        self.epsilon = 1e-6  # Avoid zero priority
 
     def add(self, experience: Experience) -> None:
         """
-        添加经验到缓冲区
+        Add experience to buffer
 
         Args:
-            experience: 要添加的经验
+            experience: Experience to add
         """
         if len(self.buffer) < self.capacity:
             self.buffer.append(experience)
             idx = len(self.buffer) - 1
         else:
-            # 覆盖最旧的经验（循环缓冲）
+            # Overwrite the oldest experience（circular buffer）
             idx = self.position
             self.buffer[idx] = experience
 
@@ -79,19 +79,19 @@ class ExperienceReplay:
 
         self.position = (self.position + 1) % self.capacity
 
-        # 更新最大优先级
+        # Update maximum priority
         if self.use_prioritized:
             self.max_priority = max(self.max_priority, experience.priority)
 
     def sample(self, batch_size: int = 32) -> List[Experience]:
         """
-        随机采样一批经验
+        Randomly sample a batch of experiences
 
         Args:
-            batch_size: 批次大小
+            batch_size: batch size
 
         Returns:
-            经验批次
+            experience batch
         """
         if len(self.buffer) < batch_size:
             batch_size = len(self.buffer)
@@ -103,14 +103,14 @@ class ExperienceReplay:
 
     def _prioritized_sample(self, batch_size: int) -> List[Experience]:
         """
-        优先级采样
+        priority sampling
 
-        根据优先级进行采样，优先级越高被采样概率越大
+        Sampling based on priority，The higher the priority, the greater the probability of being sampled.
         """
         if len(self.buffer) == 0:
             return []
 
-        # 计算采样概率
+        # Calculate sampling probability
         priorities = self.priorities[:len(self.buffer)]
         probs = priorities ** self.alpha
         total = probs.sum()
@@ -119,10 +119,10 @@ class ExperienceReplay:
         else:
             probs /= total
 
-        # 采样索引
+        # Sampling index
         indices = np.random.choice(len(self.buffer), size=min(batch_size, len(self.buffer)), p=probs)
 
-        # 计算重要性权重
+        # Calculate importance weight
         weights = (len(self.buffer) * probs[indices]) ** (-self.beta)
         weights /= weights.max()
 
@@ -130,10 +130,10 @@ class ExperienceReplay:
 
     def get_batch(self, batch_size: int = 32) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
-        获取批次数据（用于训练）
+        Get batch data（for training）
 
         Args:
-            batch_size: 批次大小
+            batch_size: batch size
 
         Returns:
             (states, actions, rewards, next_states, dones)
@@ -159,11 +159,11 @@ class ExperienceReplay:
 
     def update_priorities(self, indices: List[int], priorities: List[float]) -> None:
         """
-        更新经验的优先级
+        Update experience priority
 
         Args:
-            indices: 经验索引
-            priorities: 新的优先级
+            indices: experience index
+            priorities: new priority
         """
         for idx, priority in zip(indices, priorities):
             if idx < len(self.buffer):
@@ -175,18 +175,18 @@ class ExperienceReplay:
 
     def is_ready(self, min_size: int = 100) -> bool:
         """
-        检查缓冲区是否准备好采样
+        Check if buffer is ready for sampling
 
         Args:
-            min_size: 最小大小要求
+            min_size: Minimum size requirements
 
         Returns:
-            是否可以采样
+            Is it possible to sample
         """
         return len(self.buffer) >= min_size
 
     def clear(self) -> None:
-        """清空缓冲区"""
+        """Clear buffer"""
         self.buffer.clear()
         self.priorities = np.zeros(self.capacity)
         self.max_priority = 1.0
@@ -194,13 +194,13 @@ class ExperienceReplay:
 
 
 def main():
-    """测试经验回放"""
-    # 创建经验回放缓冲区
+    """Test experience replay"""
+    # Create experience replay buffer
     replay = ExperienceReplay(capacity=1000, use_prioritized=True)
 
-    print(f"✅ 经验回放缓冲区已创建（容量：{replay.capacity}）")
+    print(f"✅ Experience replay buffer created（capacity：{replay.capacity}）")
 
-    # 添加一些模拟经验
+    # Add some simulation experience
     for i in range(10):
         state = np.random.randn(17)
         action = np.random.randint(0, 3, size=4)
@@ -211,17 +211,17 @@ def main():
         exp = Experience(state, action, reward, next_state, done, priority=abs(reward))
         replay.add(exp)
 
-    print(f"✅ 已添加 {len(replay)} 个经验")
+    print(f"✅ Added {len(replay)} experience")
 
-    # 采样批次
+    # Sampling batch
     states, actions, rewards, next_states, dones = replay.get_batch(batch_size=4)
 
-    print(f"✅ 采样批次: states={states.shape}, actions={actions.shape}")
-    print(f"   奖励: {rewards}")
-    print(f"   完成: {dones}")
+    print(f"✅ Sampling batch: states={states.shape}, actions={actions.shape}")
+    print(f"   award: {rewards}")
+    print(f"   Finish: {dones}")
 
-    # 检查是否准备好
-    print(f"✅ 准备采样: {replay.is_ready(min_size=5)}")
+    # Check if you are ready
+    print(f"✅ Prepare for sampling: {replay.is_ready(min_size=5)}")
 
 
 if __name__ == "__main__":

@@ -1,41 +1,40 @@
 #!/usr/bin/env python3
 """
-学习模块 - 从收集的数据中学习用户偏好
+Learning modules - Learn user preferences from collected data
 
-支持两种学习模式：
-1. PreferenceLearner: 统计学习（Git历史频率分析）
-2. RLLearner: 强化学习（Actor-Critic在线学习）
+Supports two learning modes：
+1. PreferenceLearner: statistical learning（Githistorical frequency analysis）
+2. RLLearner: reinforcement learning（Actor-Criticonline learning）
 """
 
 import json
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from pathlib import Path
-from datetime import datetime
 from collections import defaultdict
 
 from .agent import AlignmentAgent, Trajectory
-from .environment import InteractionEnvironment, State, Action
+from .environment import InteractionEnvironment
 from .paths import resolve_config_path, resolve_model_dir
 
 
 class PreferenceLearner:
-    """偏好学习算法"""
+    """Preference learning algorithm"""
 
-    def __init__(self, config_path: str = None):
+    def __init__(self, config_path: str | Path | None = None):
         self.config_path = str(resolve_config_path(config_path))
-        self.learned_preferences = {}
+        self.learned_preferences: Dict[str, Any] = {}
 
     def learn_from_git_history(self, git_data: Dict[str, Any]) -> Dict[str, Any]:
-        """从Git历史学习偏好"""
-        print("\n🧠 正在学习偏好...")
+        """fromGitHistory learning preferences"""
+        print("\n🧠 Learning preferences...")
 
-        # 学习技术栈偏好
+        # Learn technology stack preferences
         tech_preferences = self._learn_tech_stack(git_data["tech_stack"])
 
-        # 学习工作流偏好
+        # Learn workflow preferences
         workflow_preferences = self._learn_workflow(git_data["workflow"])
 
-        # 组合学习结果
+        # Combining learning results
         self.learned_preferences = {
             "tech_stack": tech_preferences,
             "workflow": workflow_preferences,
@@ -46,25 +45,25 @@ class PreferenceLearner:
             }
         }
 
-        print(f"✅ 学习完成！置信度: {self.learned_preferences['metadata']['confidence']*100}%")
+        print(f"✅ Study completed！Confidence: {self.learned_preferences['metadata']['confidence']*100}%")
         return self.learned_preferences
 
     def _learn_tech_stack(self, tech_stack: Dict[str, int]) -> Dict[str, Any]:
-        """学习技术栈偏好"""
+        """Learn technology stack preferences"""
         total = sum(tech_stack.values())
 
         if total == 0:
             return {"primary": "unknown", "stats": {}}
 
-        # 找出最常用的技术
+        # Find out which technologies are most commonly used
         sorted_tech = sorted(tech_stack.items(), key=lambda x: x[1], reverse=True)
 
-        # 主要技术栈（前3名）
+        # Main technology stack（forward3name）
         primary = sorted_tech[0][0] if sorted_tech else "unknown"
         secondary = sorted_tech[1][0] if len(sorted_tech) > 1 else None
         tertiary = sorted_tech[2][0] if len(sorted_tech) > 2 else None
 
-        # 计算占比
+        # Calculate proportion
         stats = {
             tech: {
                 "count": count,
@@ -82,14 +81,14 @@ class PreferenceLearner:
         }
 
     def _learn_workflow(self, workflow: Dict[str, Any]) -> Dict[str, Any]:
-        """学习工作流偏好"""
+        """Learn workflow preferences"""
         preferences = {
             "test_driven": workflow.get("test_first", False),
             "test_ratio": workflow.get("test_ratio", 0),
             "automation_level": "balanced"
         }
 
-        # 根据测试比例推断自动化偏好
+        # Infer automation preferences based on test proportions
         if preferences["test_ratio"] > 0.5:
             preferences["automation_level"] = "quality_focused"
         elif preferences["test_ratio"] < 0.2:
@@ -97,76 +96,75 @@ class PreferenceLearner:
 
         return preferences
 
-    def save_preferences(self, output_path: str = None) -> None:
-        """保存学习结果到配置文件"""
-        output_path = output_path or self.config_path
-        output_path = Path(output_path).expanduser()
+    def save_preferences(self, output_path: str | Path | None = None) -> None:
+        """Save learning results to configuration file"""
+        output_file = Path(output_path or self.config_path).expanduser()
 
-        # 确保目录存在
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        # Make sure the directory exists
+        output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # 读取现有配置
-        if output_path.exists():
-            with open(output_path, 'r') as f:
+        # Read existing configuration
+        if output_file.exists():
+            with open(output_file, 'r') as f:
                 config = json.load(f)
         else:
             config = {"version": "1.0.0"}
 
-        # 更新配置
+        # Update configuration
         config.update({
             "learned_preferences": self.learned_preferences,
             "last_updated": self.learned_preferences["metadata"]["last_updated"]
         })
 
-        # 保存配置
-        with open(output_path, 'w') as f:
+        # Save configuration
+        with open(output_file, 'w') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ 偏好已保存到: {output_path}")
+        print(f"✅ Preferences saved to: {output_file}")
 
     def generate_report(self) -> str:
-        """生成学习报告"""
+        """Generate learning report"""
         if not self.learned_preferences:
-            return "❌ 还没有学习任何偏好"
+            return "❌ No preferences have been learned yet"
 
         tech = self.learned_preferences.get("tech_stack", {})
         workflow = self.learned_preferences.get("workflow", {})
         metadata = self.learned_preferences.get("metadata", {})
 
         report = f"""
-# 意图对齐学习报告
+# Intent Alignment Learning Report
 
-## 📊 技术栈偏好
+## 📊 Technology stack preferences
 
-主要技术: **{tech.get('primary', 'unknown')}** (占比{tech.get('stats', {}).get(tech.get('primary', ''), {}).get('percentage', 0)}%)
-次要技术: {tech.get('secondary', '无')}
-第三选择: {tech.get('tertiary', '无')}
+Main technology: **{tech.get('primary', 'unknown')}** (Proportion{tech.get('stats', {}).get(tech.get('primary', ''), {}).get('percentage', 0)}%)
+minor technology: {tech.get('secondary', 'none')}
+third choice: {tech.get('tertiary', 'none')}
 
-详细统计:
+Detailed statistics:
 """
 
         for tech_name, stats in tech.get("stats", {}).items():
-            report += f"- {tech_name}: {stats['count']}次 ({stats['percentage']}%)\n"
+            report += f"- {tech_name}: {stats['count']}Second-rate ({stats['percentage']}%)\n"
 
         report += f"""
-## 🔄 工作流偏好
+## 🔄 Workflow preferences
 
-测试驱动: {'✅ 是' if workflow.get('test_driven') else '❌ 否'}
-自动化偏好: {workflow.get('automation_level', 'balanced')}
-测试占比: {workflow.get('test_ratio', 0)*100:.0f}%
+test driven: {'✅ yes' if workflow.get('test_driven') else '❌ no'}
+Automation preferences: {workflow.get('automation_level', 'balanced')}
+Test proportion: {workflow.get('test_ratio', 0)*100:.0f}%
 
-## 📈 元数据
+## 📈 metadata
 
-置信度: {metadata.get('confidence', 0)*100:.0f}%
-数据来源: {metadata.get('data_source', 'unknown')}
-更新时间: {metadata.get('last_updated', 'unknown')}
+Confidence: {metadata.get('confidence', 0)*100:.0f}%
+Data source: {metadata.get('data_source', 'unknown')}
+Update time: {metadata.get('last_updated', 'unknown')}
 
 ---
 
-💡 **建议**:
-- 主要使用 {tech.get('primary', 'unknown')} 进行开发
-- {'采用测试驱动开发' if workflow.get('test_driven') else '考虑增加测试覆盖率'}
-- 保持当前{'的质量优先' if workflow.get('automation_level') == 'quality_focused' else '速度优先'}风格
+💡 **suggestion**:
+- Mainly used {tech.get('primary', 'unknown')} develop
+- {'Use test-driven development' if workflow.get('test_driven') else 'Consider increasing test coverage'}
+- keep current{'quality first' if workflow.get('automation_level') == 'quality_focused' else 'Speed ​​priority'}style
 """
 
         return report
@@ -174,23 +172,23 @@ class PreferenceLearner:
 
 class RLLearner:
     """
-    强化学习学习器 - 在线学习
+    reinforcement learning learner - online learning
 
-    从任务执行中实时学习，使用Actor-Critic算法优化策略
+    Learn in real time from task execution，useActor-CriticAlgorithm optimization strategy
     """
 
-    def __init__(self, model_path: str = None, config_path: str = None):
+    def __init__(self, model_path: str | Path | None = None, config_path: str | Path | None = None):
         """
-        初始化RL学习器
+        initializationRLlearner
 
         Args:
-            model_path: 模型保存路径
-            config_path: 配置文件路径
+            model_path: Model save path
+            config_path: Configuration file path
         """
         self.model_path = str(resolve_model_dir(model_path))
         self.config_path = str(resolve_config_path(config_path))
 
-        # 初始化环境和智能体
+        # Initialize environment and agent
         self.env = InteractionEnvironment(config_path=self.config_path)
 
         self.agent = AlignmentAgent(
@@ -198,51 +196,51 @@ class RLLearner:
             action_dim=self.env.get_action_space_size()
         )
 
-        # 尝试加载已有模型
+        # Try loading an existing model
         self._load_model()
 
-        # 当前轨迹
+        # current trajectory
         self.current_trajectory: Optional[Trajectory] = None
 
-        # 历史偏好统计（task_type + 选择维度）
+        # Historical preference statistics（task_type + Select dimensions）
         self._agent_reward_history: Dict[Tuple[str, str], List[float]] = defaultdict(list)
         self._workflow_reward_history: Dict[Tuple[str, str], List[float]] = defaultdict(list)
 
-        # 契约：奖励系统优先读取学习器历史
+        # contract：Reward system prioritizes reading learner history
         self.env.reward_calculator.set_history_provider(self)
 
     def _load_model(self) -> None:
-        """加载已有模型"""
+        """Load existing model"""
         model_dir = Path(self.model_path).expanduser()
         if model_dir.exists():
             try:
                 self.agent.load_model(str(model_dir))
-                print(f"✅ 已加载模型: {model_dir}")
+                print(f"✅ Model loaded: {model_dir}")
             except Exception as e:
-                print(f"⚠️  加载模型失败: {e}，使用新模型")
+                print(f"⚠️  Failed to load model: {e}，Use new model")
 
     def learn_from_task(self, task_context: Dict[str, Any],
                        task_result: Dict[str, Any]) -> Dict[str, Any]:
         """
-        从单个任务中学习（在线学习）
+        Learn from a single task（online learning）
 
         Args:
-            task_context: 任务上下文
-            task_result: 任务执行结果
+            task_context: task context
+            task_result: Task execution results
 
         Returns:
-            学习统计信息
+            Learn statistics
         """
-        # 1. 重置环境
+        # 1. Reset environment
         state = self.env.reset(task_context)
 
-        # 2. 选择动作（使用当前策略）
+        # 2. Select action（Use current strategy）
         action = self.agent.select_action(state, explore=False)
 
-        # 3. 执行动作，获得反馈
+        # 3. perform action，Get feedback
         next_state, reward, done, info = self.env.step(action, task_result)
 
-        # 4. 构建单步轨迹
+        # 4. Build a single step trajectory
         trajectory = Trajectory(
             states=[state.to_vector()],
             actions=[self.agent.encode_action_indices(action)],
@@ -251,7 +249,7 @@ class RLLearner:
             next_states=[next_state.to_vector()]
         )
 
-        # 4.1 记录偏好历史（用于后续奖励计算）
+        # 4.1 Record preference history（Used for subsequent reward calculations）
         self.record_preference_result(
             task_type=task_context.get("task_type", "T2"),
             agent=action.agent_selection.value,
@@ -259,10 +257,10 @@ class RLLearner:
             reward=reward,
         )
 
-        # 5. 更新策略
+        # 5. update strategy
         stats = self.agent.update_policy(trajectory)
 
-        # 6. 定期保存模型
+        # 6. Save models regularly
         if self.agent.episode_count % 10 == 0:
             self.save_model()
 
@@ -275,18 +273,18 @@ class RLLearner:
 
     def get_recommended_action(self, task_context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        获取推荐动作（不更新策略）
+        Get recommended actions（Do not update policy）
 
         Args:
-            task_context: 任务上下文
+            task_context: task context
 
         Returns:
-            推荐的动作
+            Recommended actions
         """
-        # 重置环境
+        # Reset environment
         state = self.env.reset(task_context)
 
-        # 选择动作（不探索）
+        # Select action（Not exploring）
         action = self.agent.select_action(state, explore=False)
 
         return {
@@ -294,17 +292,17 @@ class RLLearner:
             "automation_level": action.automation_level.value,
             "communication_style": action.communication_style.value,
             "confirmation_needed": action.confirmation_needed,
-            "confidence": 0.7 + self.env.recent_performance * 0.3  # 基于性能的置信度
+            "confidence": 0.7 + self.env.recent_performance * 0.3  # Performance-based confidence
         }
 
     def save_model(self) -> None:
-        """保存模型"""
+        """Save model"""
         self.agent.save_model(self.model_path)
         self.env.save_history(f"{self.model_path}/env_history.json")
-        print(f"✅ 模型已保存: {self.model_path}")
+        print(f"✅ Model saved: {self.model_path}")
 
     def get_training_stats(self) -> Dict[str, Any]:
-        """获取训练统计"""
+        """Get training statistics"""
         return {
             "episode_count": self.agent.episode_count,
             "total_steps": self.agent.total_steps,
@@ -313,20 +311,20 @@ class RLLearner:
         }
 
     def record_preference_result(self, task_type: str, agent: str, workflow: str, reward: float) -> None:
-        """记录任务结果到偏好历史"""
+        """Record task results to preference history"""
         reward_clipped = max(0.0, min(1.0, float(reward)))
         self._agent_reward_history[(task_type, agent)].append(reward_clipped)
         self._workflow_reward_history[(task_type, workflow)].append(reward_clipped)
 
     def get_agent_success_rate(self, task_type: str, agent: str) -> Optional[float]:
-        """提供Agent历史成功率（奖励均值）"""
+        """supplyAgentHistorical success rate（Reward mean）"""
         rewards = self._agent_reward_history.get((task_type, agent))
         if not rewards:
             return None
         return float(sum(rewards) / len(rewards))
 
     def get_workflow_success_rate(self, task_type: str, workflow: str) -> Optional[float]:
-        """提供工作流历史成功率（奖励均值）"""
+        """Provide workflow historical success rate（Reward mean）"""
         rewards = self._workflow_reward_history.get((task_type, workflow))
         if not rewards:
             return None
@@ -334,8 +332,8 @@ class RLLearner:
 
 
 def main():
-    """测试学习算法"""
-    # 模拟Git数据
+    """Test learning algorithms"""
+    # simulationGitdata
     git_data = {
         "tech_stack": {
             "python": 45,
@@ -360,15 +358,15 @@ def main():
         }
     }
 
-    # 学习偏好
+    # learning preferences
     learner = PreferenceLearner()
-    preferences = learner.learn_from_git_history(git_data)
+    learner.learn_from_git_history(git_data)
 
-    # 生成报告
+    # Generate report
     report = learner.generate_report()
     print(report)
 
-    # 保存到配置
+    # Save to configuration
     # learner.save_preferences()
 
 

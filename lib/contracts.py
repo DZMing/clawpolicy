@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-核心维度与枚举顺序契约
+Core dimensions and enumeration order contract
 
-集中维护状态/动作空间维度，避免多文件硬编码漂移。
+Centralized maintenance status/action space dimensions，Avoid multi-file hardcoded drift。
 """
 
 from typing import Final

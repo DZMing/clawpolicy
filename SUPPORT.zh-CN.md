@@ -1,14 +1,7 @@
-# 支持与反馈
+# Support (Legacy zh-CN Path)
 
-## 提问渠道
+This file path is kept for backward compatibility.
 
-- 使用问题：GitHub Discussions
-- 缺陷反馈：GitHub Issues
-- 安全问题：见 `SECURITY.zh-CN.md`
+Use the primary English support guide:
 
-## 反馈建议包含
-
-- 操作系统与 Python 版本
-- 安装方式（`pip` / 源码）
-- 最小复现步骤
-- 错误日志与 traceback
+- SUPPORT.md

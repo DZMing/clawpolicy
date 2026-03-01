@@ -2,7 +2,7 @@
 
 > Reinforcement-learning driven workflow alignment engine (Actor-Critic)
 
-**English** | **[简体中文](README.zh-CN.md)**
+**English (Primary)** | **[Chinese (Simplified)](README.zh-CN.md)**
 
 ## Features
 
@@ -29,7 +29,7 @@
 
 ![OpenClaw Alignment Disaster Recovery](disaster_recovery.gif)
 
-> **场景对比**：未受保护的 Agent 失控（🔴）vs OpenClaw Alignment 阻断（🟢）
+> **Scenario comparison**: unprotected agent runaway (🔴) vs OpenClaw Alignment interception (🟢)
 
 The disaster recovery demo showcases:
 
@@ -146,46 +146,46 @@ openclaw-alignment --help
 
 ```mermaid
 flowchart TB
-    subgraph 用户层
-        A[用户输入意图<br/>User Input]:::input
+    subgraph User Layer
+        A[User Intent Input]:::input
     end
 
-    subgraph Commander层[指挥官节点<br/>Commander Node]
-        B[深度分析<br/>Deep Analysis]:::commander
-        C[读取记忆库<br/>Read Memory]
-        C1[USER.md<br/>用户画像]:::memory
-        C2[SOUL.md<br/>系统宪法]:::memory
-        C3[AGENTS.md<br/>工具调度]:::memory
-        D[安全检查<br/>Security Check]:::security
-        E[任务边界定义<br/>Boundary Definition]:::boundary
+    subgraph Commander Layer
+        B[Deep Analysis]:::commander
+        C[Read Memory]:::commander
+        C1[USER.md<br/>User Profile]:::memory
+        C2[SOUL.md<br/>System Constitution]:::memory
+        C3[AGENTS.md<br/>Tool Dispatch]:::memory
+        D[Security Check]:::security
+        E[Task Boundary Definition]:::boundary
     end
 
-    subgraph Executor层[执行者节点<br/>Executor Node]
-        F[接收指令<br/>Receive Command]:::executor
-        G[沙盒验证<br/>Sandbox Testing]:::sandbox
-        G1{验证通过?<br/>Passed?}
-        H[执行任务<br/>Execute Task]:::execute
-        I[高危检测<br/>Risk Detection]:::monitor
-        J[兜底机制<br/>Auto-Healing]:::healing
-        K{触发兜底?<br/>Trigger Healing?}
-        L[阻断执行<br/>Block Execution]:::block
+    subgraph Executor Layer
+        F[Receive Command]:::executor
+        G[Sandbox Validation]:::sandbox
+        G1{Validation Passed?}
+        H[Execute Task]:::execute
+        I[High-Risk Detection]:::monitor
+        J[Auto-Healing Fallback]:::healing
+        K{Trigger Fallback?}
+        L[Block Execution]:::block
     end
 
-    subgraph 进化层[闭环进化<br/>Evolution Loop]
-        M[每日备份<br/>Daily Backup]:::backup
-        N[性能分析<br/>Performance Analysis]:::analysis
-        O[更新记忆库<br/>Update Memory]:::update
-        O1[更新 USER.md]:::memory
-        O2[更新 SOUL.md]:::memory
-        O3[更新 AGENTS.md]:::memory
+    subgraph Evolution Loop
+        M[Daily Backup]:::backup
+        N[Performance Analysis]:::analysis
+        O[Update Memory]:::update
+        O1[Update USER.md]:::memory
+        O2[Update SOUL.md]:::memory
+        O3[Update AGENTS.md]:::memory
     end
 
-    subgraph 输出层[结果反馈<br/>Output]
-        P[执行结果<br/>Execution Result]:::output
-        Q[用户反馈<br/>User Feedback]:::feedback
+    subgraph Output Layer
+        P[Execution Result]:::output
+        Q[User Feedback]:::feedback
     end
 
-    %% 主流程
+    %% Main flow
     A --> B
     B --> C
     C --> C1
@@ -195,20 +195,20 @@ flowchart TB
     D --> E
     E --> F
 
-    %% Executor 流程
+    %% Executor flow
     F --> G
     G --> G1
-    G1 -->|是| H
-    G1 -->|否| L
+    G1 -->|Yes| H
+    G1 -->|No| L
 
     H --> I
     I --> K
-    K -->|是| J
-    K -->|否| P
+    K -->|Yes| J
+    K -->|No| P
 
     J --> P
 
-    %% 进化循环
+    %% Evolution loop
     P --> M
     M --> N
     N --> O
@@ -216,10 +216,10 @@ flowchart TB
     O --> O2
     O --> O3
 
-    %% 反馈循环
+    %% Feedback loop
     Q --> A
 
-    %% 样式定义
+    %% Style definitions
     classDef input fill:#e1f5ff,stroke:#01579b,stroke-width:2px
     classDef commander fill:#fff3e0,stroke:#e65100,stroke-width:2px
     classDef memory fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
@@ -283,12 +283,12 @@ flowchart TB
 
 ## Test Coverage
 
-- **Total Tests**: 80
+- **Total Tests**: 87
 - **Pass Rate**: 100%
 - **Core RL + integration**: 54 tests ✅
 - **Phase 2**: 1 test ✅
 - **Phase 3**: 21 tests ✅
-- **Docs/contract drift guards**: 4 tests ✅
+- **Docs/contract drift guards**: 11 tests ✅
 
 ## Release and Versioning
 

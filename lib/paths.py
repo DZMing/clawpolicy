@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-跨平台路径工具。
+Cross-platform path tool。
 
-优先使用 XDG / AppData 目录，兼容 legacy OpenClaw 路径。
+priority use XDG / AppData Table of contents，compatible legacy OpenClaw path。
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 
 APP_NAME = "openclaw-alignment"
@@ -61,7 +61,7 @@ def get_legacy_model_dir() -> Path:
     return LEGACY_ROOT / "models" / "rl"
 
 
-def resolve_config_path(config_path: Optional[str] = None) -> Path:
+def resolve_config_path(config_path: Optional[Union[str, Path]] = None) -> Path:
     if config_path:
         return Path(config_path).expanduser()
 
@@ -75,7 +75,7 @@ def resolve_config_path(config_path: Optional[str] = None) -> Path:
     return default_path
 
 
-def resolve_model_dir(model_path: Optional[str] = None) -> Path:
+def resolve_model_dir(model_path: Optional[Union[str, Path]] = None) -> Path:
     if model_path:
         return Path(model_path).expanduser()
 

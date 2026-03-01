@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """
-交互环境单元测试
+Interactive environment unit testing
 """
 
 import pytest
 import numpy as np
 from lib.environment import (
     InteractionEnvironment, State, Action,
-    TaskType, AgentType, AutomationLevel, CommunicationStyle
+    AgentType, AutomationLevel, CommunicationStyle
 )
 
 
 class TestState:
-    """测试State类"""
+    """testStatekind"""
 
     def test_state_creation(self):
-        """测试状态创建"""
+        """Test state creation"""
         state = State(
             task_type=np.array([1, 0, 0, 0]),
             tech_stack=np.array([1, 0, 0, 0, 1, 0, 0, 0]),
@@ -32,7 +32,7 @@ class TestState:
         assert state.recent_performance == 0.7
 
     def test_to_vector(self):
-        """测试状态向量转换"""
+        """Test state vector transitions"""
         state = State(
             task_type=np.array([1, 0, 0, 0]),
             tech_stack=np.array([1, 0, 0, 0, 0, 0, 0, 0]),
@@ -52,10 +52,10 @@ class TestState:
 
 
 class TestAction:
-    """测试Action类"""
+    """testActionkind"""
 
     def test_action_creation(self):
-        """测试动作创建"""
+        """Test action creation"""
         action = Action(
             agent_selection=AgentType.CLAUDE,
             automation_level=AutomationLevel.HIGH,
@@ -66,10 +66,10 @@ class TestAction:
         assert action.agent_selection == AgentType.CLAUDE
         assert action.automation_level == AutomationLevel.HIGH
         assert action.communication_style == CommunicationStyle.BRIEF
-        assert action.confirmation_needed == False
+        assert not action.confirmation_needed
 
     def test_to_vector(self):
-        """测试动作向量转换"""
+        """Test action vector conversion"""
         action = Action(
             agent_selection=AgentType.GEMINI,
             automation_level=AutomationLevel.MEDIUM,
@@ -93,10 +93,10 @@ class TestAction:
 
 
 class TestInteractionEnvironment:
-    """测试InteractionEnvironment类"""
+    """testInteractionEnvironmentkind"""
 
     def test_initialization(self):
-        """测试环境初始化"""
+        """Test environment initialization"""
         env = InteractionEnvironment()
 
         assert env.get_state_space_size() == 17
@@ -105,7 +105,7 @@ class TestInteractionEnvironment:
         assert env.recent_performance == 0.5
 
     def test_reset(self):
-        """测试环境重置"""
+        """Test environment reset"""
         env = InteractionEnvironment()
 
         task_context = {
@@ -122,7 +122,7 @@ class TestInteractionEnvironment:
         assert state.time_of_day == pytest.approx(14.0 / 24.0)
 
     def test_reset_with_default_values(self):
-        """测试使用默认值重置"""
+        """Test reset using default values"""
         env = InteractionEnvironment()
 
         task_context = {
@@ -131,19 +131,19 @@ class TestInteractionEnvironment:
 
         state = env.reset(task_context)
 
-        # 默认值检查
+        # Default value check
         assert state.user_mood[0] == 1.0  # focused
         assert state.time_of_day == pytest.approx(12.0 / 24.0)  # noon
 
     def test_reset_invalid_task_type_fallback_to_t2(self):
-        """测试非法task_type自动回退到T2"""
+        """Test is illegaltask_typeAutomatically fall back toT2"""
         env = InteractionEnvironment()
         state = env.reset({"task_type": "INVALID", "tech_stack": ["python"]})
         assert state.task_type[1] == 1.0  # T2
         assert env.current_task_context["task_type"] == "T2"
 
     def test_reset_clamps_time_of_day_into_valid_range(self):
-        """测试time_of_day被限制在[0, 24]后再归一化"""
+        """testtime_of_dayrestricted to[0, 24]Then normalize"""
         env = InteractionEnvironment()
         state_early = env.reset({"task_type": "T2", "time_of_day": -3})
         state_late = env.reset({"task_type": "T2", "time_of_day": 30})
@@ -151,20 +151,20 @@ class TestInteractionEnvironment:
         assert state_late.time_of_day == 1.0
 
     def test_reset_invalid_time_of_day_uses_default_noon(self):
-        """测试非法time_of_day输入回退到默认中午"""
+        """Test is illegaltime_of_dayEnter to fall back to the default noon"""
         env = InteractionEnvironment()
         state = env.reset({"task_type": "T2", "time_of_day": "not-a-number"})
         assert state.time_of_day == pytest.approx(0.5)
 
     def test_step(self):
-        """测试执行步骤"""
+        """Test execution steps"""
         env = InteractionEnvironment()
 
-        # 重置环境
+        # Reset environment
         task_context = {"task_type": "T2", "tech_stack": ["python"]}
         env.reset(task_context)
 
-        # 创建动作
+        # Create action
         action = Action(
             agent_selection=AgentType.CLAUDE,
             automation_level=AutomationLevel.MEDIUM,
@@ -172,7 +172,7 @@ class TestInteractionEnvironment:
             confirmation_needed=True
         )
 
-        # 模拟任务结果
+        # Simulation task results
         task_result = {
             "duration": 300,
             "completed": True,
@@ -181,21 +181,21 @@ class TestInteractionEnvironment:
             "metrics": {"complexity": 2}
         }
 
-        # 执行步骤
+        # Execution steps
         next_state, reward, done, info = env.step(action, task_result)
 
-        # 检查返回值
+        # Check return value
         assert next_state is not None
         assert 0.0 <= reward <= 1.0
-        assert done == True
+        assert done
         assert "action_taken" in info
         assert "reward_breakdown" in info
 
-        # 检查Agent使用历史已更新
+        # examineAgentUsage history updated
         assert env.agent_usage_history["claude"] == 1
 
     def test_step_without_reset_raises_value_error(self):
-        """测试未reset直接step会抛出明确错误"""
+        """Not testedresetdirectstepwill throw an explicit error"""
         env = InteractionEnvironment()
         action = Action(
             agent_selection=AgentType.CLAUDE,
@@ -207,7 +207,7 @@ class TestInteractionEnvironment:
             env.step(action, {"completed": True})
 
     def test_step_done_updates_episode_stats(self):
-        """测试完成任务后更新episode统计"""
+        """Update after test completionepisodestatistics"""
         env = InteractionEnvironment()
         env.reset({"task_type": "T2", "tech_stack": ["python"]})
         action = Action(
@@ -231,18 +231,18 @@ class TestInteractionEnvironment:
         assert env.episode_rewards[-1] == pytest.approx(reward)
 
     def test_multi_episode(self):
-        """测试多episode运行"""
+        """Test a lotepisoderun"""
         env = InteractionEnvironment()
 
         for episode in range(3):
-            # 重置
+            # reset
             task_context = {
                 "task_type": f"T{(episode % 4) + 1}",
                 "tech_stack": ["python"]
             }
             env.reset(task_context)
 
-            # 执行动作
+            # perform action
             action = Action(
                 agent_selection=AgentType.CODEX,
                 automation_level=AutomationLevel.HIGH,
@@ -260,17 +260,17 @@ class TestInteractionEnvironment:
 
             env.step(action, task_result)
 
-        # 检查codex使用了3次
+        # examinecodexused3Second-rate
         assert env.agent_usage_history["codex"] == 3
 
     def test_performance_update(self):
-        """测试性能更新"""
+        """Test performance updates"""
         env = InteractionEnvironment()
 
-        # 初始性能
+        # initial performance
         assert env.recent_performance == 0.5
 
-        # 重置并执行高奖励任务
+        # Reset and perform high reward tasks
         env.reset({"task_type": "T2", "tech_stack": ["python"]})
 
         action = Action(
@@ -290,17 +290,17 @@ class TestInteractionEnvironment:
 
         env.step(action, task_result)
 
-        # 性能应该提高
+        # Performance should improve
         assert env.recent_performance > 0.5
 
     def test_save_load_history(self):
-        """测试历史保存和加载"""
+        """Test history saving and loading"""
         import tempfile
         import os
 
         env1 = InteractionEnvironment()
 
-        # 运行一个episode
+        # run aepisode
         env1.reset({"task_type": "T2", "tech_stack": ["python"]})
 
         action = Action(
@@ -320,41 +320,41 @@ class TestInteractionEnvironment:
 
         env1.step(action, task_result)
 
-        # 保存历史
+        # save history
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             temp_path = f.name
 
         try:
             env1.save_history(temp_path)
 
-            # 创建新环境并加载历史
+            # Create new environment and load history
             env2 = InteractionEnvironment(config_path=temp_path)
 
-            # 检查历史已恢复
+            # Check history restored
             assert env2.agent_usage_history["gemini"] == 1
 
         finally:
             os.unlink(temp_path)
 
     def test_tech_stack_encoding(self):
-        """测试技术栈编码"""
+        """Test technology stack coding"""
         env = InteractionEnvironment()
 
-        # 单个技术
+        # single technology
         state = env.reset({"task_type": "T2", "tech_stack": ["python"]})
         assert state.tech_stack[4] == 1.0  # python index
 
-        # 多个技术
+        # multiple technologies
         state = env.reset({"task_type": "T2", "tech_stack": ["python", "react"]})
         assert state.tech_stack[4] == 1.0  # python
         assert state.tech_stack[0] == 1.0  # react
 
-        # 未知技术（应该默认为python）
+        # unknown technology（should default topython）
         state = env.reset({"task_type": "T2", "tech_stack": ["unknown_tech"]})
         assert state.tech_stack[4] == 1.0  # python as default
 
     def test_task_type_encoding(self):
-        """测试任务类型编码"""
+        """Test task type encoding"""
         env = InteractionEnvironment()
 
         for i, task_type in enumerate(["T1", "T2", "T3", "T4"], 1):
@@ -363,7 +363,7 @@ class TestInteractionEnvironment:
             assert np.sum(state.task_type) == 1.0
 
     def test_user_mood_encoding(self):
-        """测试用户心情编码"""
+        """Test user mood coding"""
         env = InteractionEnvironment()
 
         for mood in ["focused", "relaxed", "stressed"]:
@@ -377,10 +377,10 @@ class TestInteractionEnvironment:
 
 
 class TestEnvironmentIntegration:
-    """集成测试"""
+    """Integration testing"""
 
     def test_full_episode(self):
-        """测试完整episode"""
+        """Test completeepisode"""
         env = InteractionEnvironment()
 
         # 1. Reset
@@ -403,7 +403,7 @@ class TestEnvironmentIntegration:
         )
 
         task_result = {
-            "duration": 600,  # 10分钟
+            "duration": 600,  # 10minute
             "completed": True,
             "test_result": {
                 "coverage": 75.0,
@@ -424,13 +424,13 @@ class TestEnvironmentIntegration:
 
         next_state, reward, done, info = env.step(action, task_result)
 
-        # 3. 验证
+        # 3. verify
         assert 0.0 <= reward <= 1.0
-        assert done == True
+        assert done
         assert info["agent_used"] == "codex"
         assert "reward_breakdown" in info
 
-        # 4. 检查状态已更新
+        # 4. Check status updated
         assert next_state.recent_performance >= 0.0
 
 

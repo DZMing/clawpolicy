@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-奖励系统单元测试
+Reward system unit testing
 """
 
 import pytest
@@ -9,10 +9,10 @@ from lib.reward import RewardCalculator, RewardSignal
 
 
 class TestRewardSignal:
-    """测试RewardSignal类"""
+    """testRewardSignalkind"""
 
     def test_collect_normalize(self):
-        """测试信号收集和归一化"""
+        """Test signal collection and normalization"""
         signal = RewardSignal(
             name="test",
             weight=0.5,
@@ -21,19 +21,19 @@ class TestRewardSignal:
             max_value=10.0
         )
 
-        # 测试中间值
+        # Test the middle value
         result = signal.collect({"value": 5.0})
         assert result == 0.5
 
-        # 测试最大值
+        # Test maximum
         result = signal.collect({"value": 10.0})
         assert result == 1.0
 
-        # 测试最小值
+        # Test minimum
         result = signal.collect({"value": 0.0})
         assert result == 0.0
 
-        # 测试超出范围（截断）
+        # test out of range（Truncate）
         result = signal.collect({"value": 15.0})
         assert result == 1.0
 
@@ -41,7 +41,7 @@ class TestRewardSignal:
         assert result == 0.0
 
     def test_history_tracking(self):
-        """测试历史记录"""
+        """Test history"""
         signal = RewardSignal(
             name="test",
             weight=0.5,
@@ -58,7 +58,7 @@ class TestRewardSignal:
         assert signal.history[1] == 0.7
 
     def test_update_weight(self):
-        """测试权重更新"""
+        """Test weight update"""
         signal = RewardSignal(
             name="test",
             weight=0.5,
@@ -73,7 +73,7 @@ class TestRewardSignal:
         signal.update_weight(-0.3)
         assert signal.weight == 0.3
 
-        # 测试边界
+        # test boundaries
         signal.update_weight(1.0)
         assert signal.weight == 1.0
 
@@ -82,13 +82,13 @@ class TestRewardSignal:
 
 
 class TestRewardCalculator:
-    """测试RewardCalculator类"""
+    """testRewardCalculatorkind"""
 
     def test_initialization(self):
-        """测试初始化"""
+        """Test initialization"""
         calc = RewardCalculator()
 
-        # 检查所有信号都已初始化
+        # Check that all signals are initialized
         expected_signals = [
             "test_coverage", "code_quality", "bug_count", "task_time",
             "acceptance_rate", "adoption_rate", "rewrite_rate",
@@ -100,7 +100,7 @@ class TestRewardCalculator:
             assert signal_name in calc.signals
 
     def test_calculate_reward(self):
-        """测试奖励计算"""
+        """Test reward calculation"""
         calc = RewardCalculator()
 
         context = {
@@ -130,31 +130,31 @@ class TestRewardCalculator:
 
         reward = calc.calculate_reward(context)
 
-        # 奖励应该在 [0, 1] 范围内
+        # The reward should be in [0, 1] within range
         assert 0.0 <= reward <= 1.0
 
-        # 高质量任务应该有较高奖励
+        # High-quality tasks should have higher rewards
         assert reward > 0.5
 
     def test_weight_adjustment(self):
-        """测试负向反馈后的权重调整"""
+        """Test weight adjustment after negative feedback"""
         calc = RewardCalculator()
 
-        # 记录初始权重
+        # Record initial weight
         initial_weights = {
             name: signal.weight
             for name, signal in calc.signals.items()
         }
 
-        # 记录负向反馈
+        # Record negative feedback
         calc.record_feedback("rating", 2)
 
-        # 检查权重已调整
-        # 注意：由于归一化，我们检查相对变化而非绝对增减
+        # Check that the weights have been adjusted
+        # Notice：due to normalization，We examine relative changes rather than absolute increases or decreases
         agent_auto_weights = ["agent_preference", "workflow_preference"]
         feedback_quality_weights = ["user_rating", "feedback_count", "code_quality", "test_coverage"]
 
-        # 计算平均变化
+        # Calculate average change
         agent_auto_change = np.mean([
             (calc.signals[name].weight - initial_weights[name]) / initial_weights[name]
             for name in agent_auto_weights
@@ -164,17 +164,17 @@ class TestRewardCalculator:
             for name in feedback_quality_weights
         ])
 
-        # 自动化权重的平均变化应该小于反馈/质量权重
+        # The average change in automation weights should be less than the feedback/quality weight
         assert agent_auto_change < feedback_quality_change
 
     def test_weight_normalization(self):
-        """测试权重归一化"""
+        """Test weight normalization"""
         calc = RewardCalculator(learning_phase="early")
         total_weight = sum(signal.weight for signal in calc.signals.values())
         assert total_weight == pytest.approx(1.0, rel=1e-3)
 
     def test_negative_signals_reduce_reward(self):
-        """测试负向信号对奖励的影响"""
+        """Testing the impact of negative signals on rewards"""
         calc = RewardCalculator()
 
         base_context = {
@@ -197,13 +197,13 @@ class TestRewardCalculator:
         assert reward_high_bug < reward_base
 
     def test_learning_phase_transition(self):
-        """测试学习阶段转换"""
+        """Test learning phase transition"""
         calc = RewardCalculator(learning_phase="early")
 
-        # 初始阶段应该是early
+        # The initial stage should beearly
         assert calc.learning_phase == "early"
 
-        # 模拟20个任务
+        # simulation20tasks
         for i in range(20):
             context = {
                 "task_result": {},
@@ -213,14 +213,14 @@ class TestRewardCalculator:
             }
             calc.calculate_reward(context)
 
-        # 应该转换为mature阶段
+        # should be converted tomaturestage
         assert calc.learning_phase == "mature"
 
     def test_reward_stats(self):
-        """测试奖励统计"""
+        """Test reward statistics"""
         calc = RewardCalculator()
 
-        # 生成一些奖励数据
+        # Generate some bonus data
         for i in range(10):
             context = {
                 "task_result": {"duration": 300},
@@ -239,10 +239,10 @@ class TestRewardCalculator:
         assert stats["count"] == 10
 
     def test_signal_stats(self):
-        """测试单个信号统计"""
+        """Test individual signal statistics"""
         calc = RewardCalculator()
 
-        # 生成一些数据
+        # generate some data
         for i in range(5):
             context = {
                 "task_result": {},
@@ -259,13 +259,13 @@ class TestRewardCalculator:
         assert "current_weight" in stats
 
     def test_save_load_state(self):
-        """测试状态保存和加载"""
+        """Test state saving and loading"""
         import tempfile
         import os
 
         calc1 = RewardCalculator()
 
-        # 生成一些数据
+        # generate some data
         for i in range(3):
             context = {
                 "task_result": {"duration": 300},
@@ -275,18 +275,18 @@ class TestRewardCalculator:
             }
             calc1.calculate_reward(context)
 
-        # 保存状态
+        # save state
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             temp_path = f.name
 
         try:
             calc1.save_state(temp_path)
 
-            # 创建新的计算器并加载状态
+            # Create new calculator and load status
             calc2 = RewardCalculator()
             calc2.load_state(temp_path)
 
-            # 检查状态已恢复
+            # Check status restored
             assert calc2.task_count == calc1.task_count
             assert len(calc2.reward_history) == len(calc1.reward_history)
             assert calc2.learning_phase == calc1.learning_phase
@@ -296,26 +296,26 @@ class TestRewardCalculator:
 
 
 class TestRewardCollectors:
-    """测试各个数据收集函数"""
+    """Test individual data collection functions"""
 
     def test_collect_test_coverage(self):
-        """测试测试覆盖率收集"""
+        """Test test coverage collection"""
         calc = RewardCalculator()
 
-        # 有测试结果
+        # There are test results
         context = {
             "test_result": {"coverage": 85.0}
         }
         assert calc._collect_test_coverage(context) == 85.0
 
-        # 无测试结果，但有创建测试文件
+        # No test results，But there is a test file created
         context = {
             "task_result": {"test_files_created": True}
         }
         assert calc._collect_test_coverage(context) == 50.0
 
     def test_collect_code_quality(self):
-        """测试代码质量收集"""
+        """Test code quality collection"""
         calc = RewardCalculator()
 
         context = {
@@ -328,14 +328,14 @@ class TestRewardCollectors:
 
         quality = calc._collect_code_quality(context)
 
-        # 应该在 [0, 10] 范围内
+        # should be in [0, 10] within range
         assert 0.0 <= quality <= 10.0
 
-        # 低复杂度、低重复、高lint应该得到高质量分
+        # low complexity、Low repetition、highlintShould get high quality points
         assert quality > 5.0
 
     def test_collect_bug_count(self):
-        """测试Bug数量收集"""
+        """testBugquantity collection"""
         calc = RewardCalculator()
 
         context = {
@@ -347,7 +347,7 @@ class TestRewardCollectors:
         assert bugs == 3
 
     def test_collect_task_time(self):
-        """测试任务时间收集"""
+        """Test task time collection"""
         calc = RewardCalculator()
 
         context = {
@@ -358,22 +358,22 @@ class TestRewardCollectors:
         assert time == 600
 
     def test_collect_acceptance_rate(self):
-        """测试接受率收集"""
+        """Test acceptance rate collection"""
         calc = RewardCalculator()
 
-        # 接受
+        # accept
         context = {
             "user_feedback": {"accepted": True}
         }
         assert calc._collect_acceptance_rate(context) == 1.0
 
-        # 拒绝
+        # reject
         context = {
             "user_feedback": {"accepted": False}
         }
         assert calc._collect_acceptance_rate(context) == 0.0
 
-        # 有修改
+        # There are modifications
         context = {
             "user_feedback": {"revisions": 3}
         }
@@ -381,26 +381,26 @@ class TestRewardCollectors:
         assert rate < 1.0
 
     def test_collect_user_rating(self):
-        """测试用户评分收集"""
+        """Test user rating collection"""
         calc = RewardCalculator()
 
-        # 显式评分
+        # Explicit scoring
         context = {
             "user_feedback": {"rating": 5}
         }
         assert calc._collect_user_rating(context) == 5
 
-        # 从acceptance推断
+        # fromacceptanceinfer
         context = {
             "user_feedback": {"accepted": True}
         }
         assert calc._collect_user_rating(context) == 4.0
 
     def test_collect_agent_preference(self):
-        """测试Agent偏好收集"""
+        """testAgentPreference collection"""
         calc = RewardCalculator()
 
-        # T2任务使用Claude
+        # T2Task usageClaude
         context = {
             "task_type": "T2",
             "task_result": {"agent": "claude"}
@@ -408,7 +408,7 @@ class TestRewardCollectors:
         preference = calc._collect_agent_preference(context)
         assert preference > 0.5
 
-        # T3任务使用Codex
+        # T3Task usageCodex
         context = {
             "task_type": "T3",
             "task_result": {"agent": "codex"}
@@ -417,17 +417,17 @@ class TestRewardCollectors:
         assert preference > 0.5
 
     def test_collect_workflow_preference(self):
-        """测试工作流偏好收集"""
+        """Test workflow preference collection"""
         calc = RewardCalculator()
 
-        # TDD工作流
+        # TDDWorkflow
         context = {
             "task_result": {"workflow": "tdd"}
         }
         preference = calc._collect_workflow_preference(context)
         assert preference > 0.8
 
-        # 标准工作流
+        # Standard workflow
         context = {
             "task_result": {"workflow": "standard"}
         }
@@ -436,9 +436,9 @@ class TestRewardCollectors:
 
 
 class StubHistoryProvider:
-    """测试用历史提供器"""
+    """History provider for testing"""
 
-    def __init__(self, agent_rate: float = None, workflow_rate: float = None):
+    def __init__(self, agent_rate: float | None = None, workflow_rate: float | None = None):
         self.agent_rate = agent_rate
         self.workflow_rate = workflow_rate
 
@@ -450,7 +450,7 @@ class StubHistoryProvider:
 
 
 class TestRewardHistoryProvider:
-    """测试历史偏好提供器接入"""
+    """Testing history preference provider access"""
 
     def test_history_provider_overrides_agent_preference(self):
         calc = RewardCalculator(history_provider=StubHistoryProvider(agent_rate=0.92))

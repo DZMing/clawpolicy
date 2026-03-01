@@ -10,9 +10,7 @@
 Please report vulnerabilities privately:
 
 - GitHub private advisory: https://github.com/412984588/openclaw-alignment/security/advisories/new
-- Security email: security@openclaw-alignment.example
-
-Before public release, maintainers must replace the placeholder email with the real security contact.
+- Security email: not configured (use private advisory link above)
 
 Do **not** open public issues for unpatched vulnerabilities.
 

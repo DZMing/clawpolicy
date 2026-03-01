@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RLLearner历史偏好测试
+RLLearnerhistorical preference test
 """
 
 import pytest

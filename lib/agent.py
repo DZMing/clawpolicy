@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-强化学习智能体 - Actor-Critic实现
+reinforcement learning agent - Actor-Criticaccomplish
 
-实现Actor-Critic算法，包括：
-- PolicyNetwork: 策略网络（输出动作概率分布）
-- ValueNetwork: 价值网络（估计状态价值）
-- AlignmentAgent: Actor-Critic智能体
+accomplishActor-Criticalgorithm，include：
+- PolicyNetwork: policy network（Output action probability distribution）
+- ValueNetwork: value network（Estimated status value）
+- AlignmentAgent: Actor-Criticagent
 
-Phase 1: 纯NumPy实现（线性模型）
-Phase 2: 可选PyTorch实现（神经网络）
+Phase 1: pureNumPyaccomplish（linear model）
+Phase 2: OptionalPyTorchaccomplish（neural network）
 """
 
 import numpy as np
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Dict, List, Tuple
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -30,12 +30,12 @@ from .environment import State, Action, AgentType, AutomationLevel, Communicatio
 
 @dataclass
 class Trajectory:
-    """轨迹数据类"""
-    states: List[np.ndarray]  # 状态序列
-    actions: List[np.ndarray]  # 动作序列（索引向量）
-    rewards: List[float]  # 奖励序列
-    dones: List[bool]  # 完成标志
-    next_states: List[np.ndarray]  # 下一状态序列
+    """Trajectory data class"""
+    states: List[np.ndarray]  # status sequence
+    actions: List[np.ndarray]  # action sequence（index vector）
+    rewards: List[float]  # reward sequence
+    dones: List[bool]  # Done sign
+    next_states: List[np.ndarray]  # next state sequence
 
     def __len__(self) -> int:
         return len(self.states)
@@ -46,29 +46,29 @@ class Trajectory:
 
 class PolicyNetwork:
     """
-    策略网络 - 输出动作概率分布
+    policy network - Output action probability distribution
 
-    Phase 1: 线性模型（logits = state @ weights + bias）
-    Phase 2: 可选神经网络（PyTorch）
+    Phase 1: linear model（logits = state @ weights + bias）
+    Phase 2: Optional neural network（PyTorch）
     """
 
     def __init__(self, state_dim: int, action_dim: int = ACTION_VECTOR_DIM, hidden_dim: int = 64):
         """
-        初始化策略网络
+        Initialize policy network
 
         Args:
-            state_dim: 状态维度
-            action_dim: 动作维度
-            hidden_dim: 隐藏层维度（Phase 2使用）
+            state_dim: status dimension
+            action_dim: action dimension
+            hidden_dim: Hidden layer dimensions（Phase 2use）
         """
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.hidden_dim = hidden_dim
 
-        # 多头动作空间
+        # Bull action space
         self.head_dims = ACTION_HEAD_DIMS.copy()
 
-        # Phase 1: 线性模型参数（多头）
+        # Phase 1: Linear model parameters（long）
         self.weights = {
             name: np.random.randn(state_dim, dim) * 0.01
             for name, dim in self.head_dims.items()
@@ -79,30 +79,30 @@ class PolicyNetwork:
         }
 
     def forward(self, state: np.ndarray) -> Dict[str, np.ndarray]:
-        """前向传播：计算各头logits"""
+        """forward propagation：Count each headlogits"""
         return {
             name: state @ self.weights[name] + self.bias[name]
             for name in self.head_dims
         }
 
     def softmax(self, logits: np.ndarray) -> np.ndarray:
-        """Softmax激活函数"""
-        # 数值稳定性：减去最大值
+        """Softmaxactivation function"""
+        # numerical stability：Subtract the maximum value
         exp_logits = np.exp(logits - np.max(logits))
         return exp_logits / np.sum(exp_logits)
 
     def get_action_probs(self, state: np.ndarray) -> Dict[str, np.ndarray]:
-        """获取动作概率分布（多头）"""
+        """Get action probability distribution（long）"""
         logits = self.forward(state)
         return {name: self.softmax(head_logits) for name, head_logits in logits.items()}
 
     def sample_action(self, state: np.ndarray, explore: bool = True) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
         """
-        采样动作
+        Sampling action
 
         Args:
-            state: 当前状态
-            explore: 是否探索（epsilon-greedy）
+            state: Current status
+            explore: Whether to explore（epsilon-greedy）
 
         Returns:
             (action_indices, action_probs)
@@ -110,7 +110,7 @@ class PolicyNetwork:
         action_probs = self.get_action_probs(state)
 
         if not explore:
-            # 推理模式：贪心选择，避免推荐动作随机抖动
+            # reasoning mode：greedy choice，Avoid random jitter in recommended actions
             action_indices = np.array([
                 int(np.argmax(action_probs["agent"])),
                 int(np.argmax(action_probs["automation"])),
@@ -118,7 +118,7 @@ class PolicyNetwork:
                 int(np.argmax(action_probs["confirm"]))
             ], dtype=int)
         elif np.random.random() < 0.1:  # 10% epsilon-greedy
-            # 随机探索（每个头独立随机）
+            # Random exploration（Each head is independently randomized）
             action_indices = np.array([
                 np.random.randint(self.head_dims["agent"]),
                 np.random.randint(self.head_dims["automation"]),
@@ -126,7 +126,7 @@ class PolicyNetwork:
                 np.random.randint(self.head_dims["confirm"])
             ], dtype=int)
         else:
-            # 按概率采样（每个头独立采样）
+            # Sampling by probability（Each head is sampled independently）
             action_indices = np.array([
                 np.random.choice(self.head_dims["agent"], p=action_probs["agent"]),
                 np.random.choice(self.head_dims["automation"], p=action_probs["automation"]),
@@ -139,16 +139,16 @@ class PolicyNetwork:
     def update(self, state: np.ndarray, action_indices: np.ndarray, advantage: float,
                learning_rate: float = 0.01) -> float:
         """
-        更新策略网络（REINFORCE算法）
+        Update policy network（REINFORCEalgorithm）
 
         Args:
-            state: 当前状态
-            action_indices: 执行的动作索引（多头）
-            advantage: 优势函数 A(s,a) = Q(s,a) - V(s)
-            learning_rate: 学习率
+            state: Current status
+            action_indices: Action index executed（long）
+            advantage: advantage function A(s,a) = Q(s,a) - V(s)
+            learning_rate: learning rate
 
         Returns:
-            损失值
+            loss value
         """
         action_probs = self.get_action_probs(state)
 
@@ -168,14 +168,14 @@ class PolicyNetwork:
             one_hot[action_idx] = 1.0
             grad_logits = (one_hot - probs) * advantage
 
-            # 梯度上升（等价于对损失下降）
+            # gradient ascent（Equivalent to loss reduction）
             self.weights[head_name] += learning_rate * np.outer(state, grad_logits)
             self.bias[head_name] += learning_rate * grad_logits
 
         return float(total_loss)
 
-    def save(self, path: str) -> None:
-        """保存模型参数"""
+    def save(self, path: str | Path) -> None:
+        """Save model parameters"""
         params = {
             "weights": {name: w.tolist() for name, w in self.weights.items()},
             "bias": {name: b.tolist() for name, b in self.bias.items()},
@@ -184,20 +184,20 @@ class PolicyNetwork:
             "head_dims": self.head_dims
         }
 
-        path = Path(path).expanduser()
-        path.parent.mkdir(parents=True, exist_ok=True)
+        model_path = Path(path).expanduser()
+        model_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(path, 'w') as f:
+        with open(model_path, 'w') as f:
             json.dump(params, f)
 
-    def load(self, path: str) -> None:
-        """加载模型参数"""
-        path = Path(path).expanduser()
+    def load(self, path: str | Path) -> None:
+        """Load model parameters"""
+        model_path = Path(path).expanduser()
 
-        if not path.exists():
+        if not model_path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(model_path, 'r') as f:
             params = json.load(f)
 
         self.weights = {name: np.array(w) for name, w in params["weights"].items()}
@@ -209,82 +209,82 @@ class PolicyNetwork:
 
 class ValueNetwork:
     """
-    价值网络 - 估计状态价值 V(s)
+    value network - Estimated status value V(s)
 
-    Phase 1: 线性模型
-    Phase 2: 可选神经网络（PyTorch）
+    Phase 1: linear model
+    Phase 2: Optional neural network（PyTorch）
     """
 
     def __init__(self, state_dim: int, hidden_dim: int = 64):
         """
-        初始化价值网络
+        Initialize the value network
 
         Args:
-            state_dim: 状态维度
-            hidden_dim: 隐藏层维度（Phase 2使用）
+            state_dim: status dimension
+            hidden_dim: Hidden layer dimensions（Phase 2use）
         """
         self.state_dim = state_dim
         self.hidden_dim = hidden_dim
 
-        # 线性模型参数
+        # Linear model parameters
         self.weights = np.random.randn(state_dim) * 0.01
         self.bias = 0.0
 
     def forward(self, state: np.ndarray) -> float:
-        """前向传播：计算状态价值"""
+        """forward propagation：Calculate status value"""
         return float(state @ self.weights + self.bias)
 
     def update(self, state: np.ndarray, target_value: float,
                learning_rate: float = 0.01) -> float:
         """
-        更新价值网络（MSE损失）
+        Update value network（MSEloss）
 
         Args:
-            state: 当前状态
-            target_value: 目标价值（实际回报）
-            learning_rate: 学习率
+            state: Current status
+            target_value: target value（actual return）
+            learning_rate: learning rate
 
         Returns:
-            损失值
+            loss value
         """
-        # 计算当前价值
+        # Calculate current value
         current_value = self.forward(state)
 
-        # 计算损失
+        # Calculate losses
         loss = (current_value - target_value) ** 2
 
-        # 计算梯度
+        # Calculate gradient
         grad_w = 2 * (current_value - target_value) * state
         grad_b = 2 * (current_value - target_value)
 
-        # 更新权重
+        # Update weights
         self.weights -= learning_rate * grad_w
         self.bias -= learning_rate * grad_b
 
         return loss
 
-    def save(self, path: str) -> None:
-        """保存模型参数"""
+    def save(self, path: str | Path) -> None:
+        """Save model parameters"""
         params = {
             "weights": self.weights.tolist(),
             "bias": float(self.bias),
             "state_dim": self.state_dim
         }
 
-        path = Path(path).expanduser()
-        path.parent.mkdir(parents=True, exist_ok=True)
+        model_path = Path(path).expanduser()
+        model_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(path, 'w') as f:
+        with open(model_path, 'w') as f:
             json.dump(params, f)
 
-    def load(self, path: str) -> None:
-        """加载模型参数"""
-        path = Path(path).expanduser()
+    def load(self, path: str | Path) -> None:
+        """Load model parameters"""
+        model_path = Path(path).expanduser()
 
-        if not path.exists():
+        if not model_path.exists():
             return
 
-        with open(path, 'r') as f:
+        with open(model_path, 'r') as f:
             params = json.load(f)
 
         self.weights = np.array(params["weights"])
@@ -294,18 +294,18 @@ class ValueNetwork:
 
 class AlignmentAgent:
     """
-    Actor-Critic智能体
+    Actor-Criticagent
 
-    结合策略网络和价值网络，实现Actor-Critic算法：
-    - Actor: 策略网络，选择动作
-    - Critic: 价值网络，评估状态价值
+    Combining strategy network and value network，accomplishActor-Criticalgorithm：
+    - Actor: policy network，Select action
+    - Critic: value network，Evaluate state value
 
-    算法流程：
-    1. 使用当前策略选择动作
-    2. 执行动作，获得奖励和下一状态
-    3. 计算优势函数 A = R + γV(s') - V(s)
-    4. 更新Actor：-log π(a|s) * A
-    5. 更新Critic：(V(s) - R)²
+    Algorithm process：
+    1. Select an action using the current strategy
+    2. perform action，Get rewards and next status
+    3. Compute advantage function A = R + γV(s') - V(s)
+    4. renewActor：-log π(a|s) * A
+    5. renewCritic：(V(s) - R)²
     """
 
     def __init__(self, state_dim: int, action_dim: int,
@@ -313,55 +313,55 @@ class AlignmentAgent:
                  actor_lr: float = 0.01,
                  critic_lr: float = 0.01):
         """
-        初始化智能体
+        Initialize the agent
 
         Args:
-            state_dim: 状态维度
-            action_dim: 动作维度
-            gamma: 折扣因子
-            actor_lr: Actor学习率
-            critic_lr: Critic学习率
+            state_dim: status dimension
+            action_dim: action dimension
+            gamma: discount factor
+            actor_lr: Actorlearning rate
+            critic_lr: Criticlearning rate
         """
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.gamma = gamma
 
-        # 初始化网络
+        # Initialize the network
         self.policy_net = PolicyNetwork(state_dim, action_dim)
         self.value_net = ValueNetwork(state_dim)
 
-        # 学习率
+        # learning rate
         self.actor_lr = actor_lr
         self.critic_lr = critic_lr
 
-        # 训练统计
+        # training statistics
         self.episode_count = 0
         self.total_steps = 0
 
     def select_action(self, state: State, explore: bool = True) -> Action:
         """
-        选择动作
+        Select action
 
         Args:
-            state: 当前状态
-            explore: 是否探索
+            state: Current status
+            explore: Whether to explore
 
         Returns:
-            选择的动作
+            selected action
         """
-        # 将状态转换为向量
+        # Convert state to vector
         state_vector = state.to_vector()
 
-        # 采样动作索引
+        # Sampling action index
         action_indices, action_probs = self.policy_net.sample_action(state_vector, explore)
 
-        # 将动作索引转换为Action对象
+        # Convert action index toActionobject
         action = self.decode_action_indices(action_indices)
 
         return action
 
     def encode_action_indices(self, action: Action) -> np.ndarray:
-        """将Action编码为索引向量"""
+        """WillActionencoded as index vector"""
         agent_idx = AGENT_ORDER.index(action.agent_selection.value)
         automation_idx = AUTOMATION_ORDER.index(action.automation_level.value)
         style_idx = STYLE_ORDER.index(action.communication_style.value)
@@ -370,7 +370,7 @@ class AlignmentAgent:
         return np.array([agent_idx, automation_idx, style_idx, confirm_idx], dtype=int)
 
     def decode_action_indices(self, action_indices: np.ndarray) -> Action:
-        """将动作索引解码为Action对象"""
+        """Decode action index asActionobject"""
         indices = [int(x) for x in action_indices]
         if len(indices) != 4:
             raise ValueError(f"action_indices must contain 4 values, got {len(indices)}")
@@ -399,13 +399,13 @@ class AlignmentAgent:
 
     def update_policy(self, trajectory: Trajectory) -> Dict[str, float]:
         """
-        更新策略（Actor-Critic算法）
+        update strategy（Actor-Criticalgorithm）
 
         Args:
-            trajectory: 完整轨迹
+            trajectory: complete trajectory
 
         Returns:
-            损失统计
+            Loss statistics
         """
         if len(trajectory) == 0:
             return {}
@@ -413,7 +413,7 @@ class AlignmentAgent:
         total_actor_loss = 0.0
         total_critic_loss = 0.0
 
-        # 逐步更新
+        # Gradually update
         for i in range(len(trajectory)):
             state = trajectory.states[i]
             action_indices = trajectory.actions[i]
@@ -421,25 +421,25 @@ class AlignmentAgent:
             next_state = trajectory.next_states[i]
             done = trajectory.dones[i]
 
-            # 计算目标价值
+            # Calculate target value
             if done:
                 target_value = reward
             else:
                 target_value = reward + self.gamma * self.value_net.forward(next_state)
 
-            # 计算优势函数
+            # Compute advantage function
             current_value = self.value_net.forward(state)
             advantage = target_value - current_value
 
-            # 更新Actor
+            # renewActor
             actor_loss = self.policy_net.update(state, action_indices, advantage, self.actor_lr)
             total_actor_loss += actor_loss
 
-            # 更新Critic
+            # renewCritic
             critic_loss = self.value_net.update(state, target_value, self.critic_lr)
             total_critic_loss += critic_loss
 
-        # 更新统计
+        # Update statistics
         self.episode_count += 1
         self.total_steps += len(trajectory)
 
@@ -452,19 +452,19 @@ class AlignmentAgent:
 
     def _compute_returns(self, rewards: List[float], dones: List[bool]) -> List[float]:
         """
-        计算折扣回报
+        Calculate discounted returns
 
         Args:
-            rewards: 奖励序列
-            dones: 完成标志序列
+            rewards: reward sequence
+            dones: Complete flag sequence
 
         Returns:
-            折扣回报序列
+            discount return sequence
         """
-        returns = []
+        returns: List[float] = []
         running_return = 0.0
 
-        # 从后往前计算
+        # Calculate from back to front
         for reward, done in zip(reversed(rewards), reversed(dones)):
             if done:
                 running_return = reward
@@ -476,17 +476,17 @@ class AlignmentAgent:
         return returns
 
     def save_model(self, path: str) -> None:
-        """保存模型"""
+        """Save model"""
         model_dir = Path(path).expanduser()
         model_dir.mkdir(parents=True, exist_ok=True)
 
-        # 保存策略网络
+        # save policy network
         self.policy_net.save(str(model_dir / "policy_network.json"))
 
-        # 保存价值网络
+        # Save value network
         self.value_net.save(str(model_dir / "value_network.json"))
 
-        # 保存元数据
+        # Save metadata
         metadata = {
             "episode_count": self.episode_count,
             "total_steps": self.total_steps,
@@ -499,16 +499,16 @@ class AlignmentAgent:
             json.dump(metadata, f, indent=2)
 
     def load_model(self, path: str) -> None:
-        """加载模型"""
+        """Load model"""
         model_dir = Path(path).expanduser()
 
-        # 加载策略网络
+        # Load policy network
         self.policy_net.load(str(model_dir / "policy_network.json"))
 
-        # 加载价值网络
+        # Load value network
         self.value_net.load(str(model_dir / "value_network.json"))
 
-        # 加载元数据
+        # Load metadata
         metadata_path = model_dir / "metadata.json"
         if metadata_path.exists():
             with open(metadata_path, 'r') as f:
@@ -519,25 +519,25 @@ class AlignmentAgent:
 
 
 def main():
-    """测试智能体"""
+    """test agent"""
     from .environment import InteractionEnvironment
 
-    # 创建环境和智能体
+    # Create environments and agents
     env = InteractionEnvironment()
     agent = AlignmentAgent(
         state_dim=env.get_state_space_size(),
         action_dim=env.get_action_space_size()
     )
 
-    print(f"智能体已创建")
-    print(f"状态空间: {env.get_state_space_size()}")
-    print(f"动作空间: {env.get_action_space_size()}")
+    print("Agent has been created")
+    print(f"state space: {env.get_state_space_size()}")
+    print(f"action space: {env.get_action_space_size()}")
 
-    # 模拟训练
+    # Simulation training
     for episode in range(3):
         print(f"\n=== Episode {episode + 1} ===")
 
-        # 重置环境
+        # Reset environment
         task_context = {
             "task_type": "T2",
             "tech_stack": ["python"],
@@ -546,26 +546,26 @@ def main():
 
         state = env.reset(task_context)
 
-        # 收集轨迹
+        # Collect tracks
         trajectory = Trajectory([], [], [], [], [])
 
-        for step in range(5):  # 每个episode最多5步
-            # 选择动作
+        for step in range(5):  # eachepisodemost5step
+            # Select action
             action = agent.select_action(state, explore=True)
 
-            # 模拟任务结果
+            # Simulation task results
             task_result = {
                 "duration": 200 + step * 50,
-                "completed": step == 4,  # 最后一步完成
+                "completed": step == 4,  # Last step completed
                 "test_result": {"coverage": 70 + step * 5},
                 "user_feedback": {"accepted": True},
                 "metrics": {}
             }
 
-            # 执行步骤
+            # Execution steps
             next_state, reward, done, info = env.step(action, task_result)
 
-            # 记录轨迹
+            # record track
             trajectory.states.append(state.to_vector())
             trajectory.actions.append(agent.encode_action_indices(action))
             trajectory.rewards.append(reward)
@@ -579,15 +579,15 @@ def main():
             if done:
                 break
 
-        # 更新策略
+        # update strategy
         stats = agent.update_policy(trajectory)
-        print(f"  总回报: {stats['total_return']:.3f}")
-        print(f"  Actor损失: {stats['actor_loss']:.4f}")
-        print(f"  Critic损失: {stats['critic_loss']:.4f}")
+        print(f"  total return: {stats['total_return']:.3f}")
+        print(f"  Actorloss: {stats['actor_loss']:.4f}")
+        print(f"  Criticloss: {stats['critic_loss']:.4f}")
 
-    # 保存模型
+    # Save model
     agent.save_model("/tmp/openclaw_rl_agent")
-    print(f"\n模型已保存到 /tmp/openclaw_rl_agent")
+    print("\nModel saved to /tmp/openclaw_rl_agent")
 
 
 if __name__ == "__main__":

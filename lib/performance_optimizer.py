@@ -1,29 +1,26 @@
 #!/usr/bin/env python3
 """
-性能优化器 - 批量推理与模型量化
+Performance optimizer - Batch inference and model quantification
 
-实现推理性能优化：
-- 批量推理（Batch Inference）
-- 模型量化（Quantization）
-- 缓存机制（Memoization）
-- JIT编译（可选）
+Implement inference performance optimization：
+- Batch inference（Batch Inference）
+- Model quantification（Quantization）
+- caching mechanism（Memoization）
+- JITcompile（Optional）
 
-Phase 3.4 - 预计150行
+Phase 3.4 - expected150OK
 """
 
 import numpy as np
-from typing import Dict, List, Any, Optional, Tuple, Callable
-from pathlib import Path
+from typing import Dict, List, Any, Tuple, Callable
 import json
-from datetime import datetime
 import logging
 from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
-# 尝试导入JIT编译
+# try to importJITcompile
 try:
-    import numba
     from numba import jit, njit
     NUMBA_AVAILABLE = True
 except ImportError:
@@ -34,9 +31,9 @@ except ImportError:
 
 class BatchInference:
     """
-    批量推理器
+    batch reasoner
 
-    将多个推理请求合并为批量处理，提升吞吐量
+    Combine multiple inference requests into batches，Improve throughput
     """
 
     def __init__(self,
@@ -44,12 +41,12 @@ class BatchInference:
                  batch_size: int = 32,
                  timeout_ms: int = 10):
         """
-        初始化批量推理器
+        Initialize batch reasoner
 
         Args:
-            model: 模型（policy_net或value_net）
-            batch_size: 批量大小
-            timeout_ms: 批量超时（毫秒）
+            model: Model（policy_netorvalue_net）
+            batch_size: batch size
+            timeout_ms: batch timeout（millisecond）
         """
         self.model = model
         self.batch_size = batch_size
@@ -61,30 +58,30 @@ class BatchInference:
 
     def predict(self, state: np.ndarray, sync: bool = True) -> float:
         """
-        预测（支持批量）
+        predict（Support batch）
 
         Args:
-            state: 输入状态
-            sync: 是否同步（不等待批量）
+            state: input status
+            sync: Synchronize or not（No waiting for bulk）
 
         Returns:
-            预测结果
+            Prediction results
         """
         if sync:
-            # 同步模式：直接推理
+            # synchronous mode：direct inference
             return self._infer_single(state)
 
-        # 异步模式：加入批量队列
+        # asynchronous mode：Join bulk queue
         request_id = self._add_request(state)
 
-        # 如果队列满，执行批量推理
+        # If the queue is full，Perform batch inference
         if len(self.pending_requests) >= self.batch_size:
             self.last_batch_results = self._flush_batch()
 
         return request_id
 
     def _add_request(self, state: np.ndarray) -> int:
-        """添加请求到队列"""
+        """Add request to queue"""
         request_id = self.request_counter
         self.request_counter += 1
 
@@ -99,17 +96,17 @@ class BatchInference:
         return request_id
 
     def _infer_single(self, state: np.ndarray) -> float:
-        """单个推理"""
+        """single inference"""
         if hasattr(self.model, 'forward'):
             return self.model.forward(state)
         elif hasattr(self.model, 'get_action_probs'):
             probs = self.model.get_action_probs(state)
             return float(np.argmax(probs))
         else:
-            raise ValueError(f"未知的模型类型: {type(self.model)}")
+            raise ValueError(f"Unknown model type: {type(self.model)}")
 
     def _infer_batch(self, states: np.ndarray) -> np.ndarray:
-        """批量推理"""
+        """Batch inference"""
         results = []
 
         for state in states:
@@ -119,80 +116,80 @@ class BatchInference:
         return np.array(results)
 
     def _flush_batch(self) -> List[Tuple[int, float]]:
-        """执行批量推理"""
+        """Perform batch inference"""
         if not self.pending_requests:
             return []
 
-        # 提取所有状态
+        # Extract all status
         states = np.array([req["state"] for req in self.pending_requests])
 
-        # 批量推理
+        # Batch inference
         results = self._infer_batch(states)
 
-        # 更新请求结果
+        # Update request results
         for i, req in enumerate(self.pending_requests):
             req["result"] = results[i]
 
-        # 返回结果
+        # Return results
         output = [(req["id"], req["result"]) for req in self.pending_requests]
 
-        # 清空队列
+        # Clear the queue
         self.pending_requests = []
 
         return output
 
     def flush(self) -> List[Tuple[int, float]]:
-        """手动刷新队列"""
+        """Manually refresh the queue"""
         return self._flush_batch()
 
     def get_queue_size(self) -> int:
-        """获取队列大小"""
+        """Get queue size"""
         return len(self.pending_requests)
 
 
 class ModelQuantization:
     """
-    模型量化
+    Model quantification
 
-    将模型权重从float32转换为int8，减少模型大小和提升推理速度
+    Change the model weights fromfloat32Convert toint8，Reduce model size and increase inference speed
     """
 
     @staticmethod
     def quantize_weights(weights: np.ndarray,
                         bits: int = 8) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
-        量化权重
+        Quantitative weight
 
         Args:
-            weights: 原始权重（float32）
-            bits: 量化位数（8或16）
+            weights: original weight（float32）
+            bits: Number of quantization bits（8or16）
 
         Returns:
-            (量化后权重, 量化参数)
+            (Quantified weight, Quantization parameter)
         """
         if bits == 8:
-            # INT8量化
+            # INT8Quantify
             qmin, qmax = -128, 127
-            dtype = np.int8
+            dtype: Any = np.int8
         elif bits == 16:
-            # INT16量化
+            # INT16Quantify
             qmin, qmax = -32768, 32767
             dtype = np.int16
         else:
-            raise ValueError(f"不支持的量化位数: {bits}")
+            raise ValueError(f"Unsupported number of quantization bits: {bits}")
 
-        # 计算缩放因子和零点
+        # Calculate scaling factors and zero point
         wmin, wmax = weights.min(), weights.max()
         scale = (wmax - wmin) / (qmax - qmin)
         zero_point = qmin - wmin / scale
 
-        # 量化
+        # Quantify
         quantized = np.clip(
             np.round(weights / scale + zero_point),
             qmin, qmax
         ).astype(dtype)
 
-        # 量化参数
+        # Quantization parameter
         params = {
             "scale": float(scale),
             "zero_point": int(zero_point),
@@ -207,14 +204,14 @@ class ModelQuantization:
     def dequantize_weights(quantized: np.ndarray,
                           params: Dict[str, Any]) -> np.ndarray:
         """
-        反量化权重
+        Inverse quantization weight
 
         Args:
-            quantized: 量化后权重
-            params: 量化参数
+            quantized: Quantified weight
+            params: Quantization parameter
 
         Returns:
-            反量化后的权重（float32）
+            The weight after inverse quantization（float32）
         """
         scale = params["scale"]
         zero_point = params["zero_point"]
@@ -223,18 +220,18 @@ class ModelQuantization:
 
     def quantize_model(self, model: Any) -> Dict[str, Any]:
         """
-        量化整个模型
+        Quantify the entire model
 
         Args:
-            model: 模型（需要有权重矩阵）
+            model: Model（Requires a weight matrix）
 
         Returns:
-            量化后的模型和参数
+            Quantified models and parameters
         """
         quantized_model = {}
         quantization_params = {}
 
-        # 提取模型权重（假设有get_weights方法）
+        # Extract model weights（Assume there isget_weightsmethod）
         if hasattr(model, 'get_weights'):
             weights = model.get_weights()
 
@@ -244,7 +241,7 @@ class ModelQuantization:
                 quantized_model[layer_name] = q_weight
                 quantization_params[layer_name] = q_params
         else:
-            logger.warning("⚠️ 模型不支持get_weights方法，无法量化")
+            logger.warning("⚠️ The model does not supportget_weightsmethod，cannot be quantified")
             return {"original_model": model}
 
         return {
@@ -257,23 +254,23 @@ class ModelQuantization:
                                original_model: Any,
                                quantized_model: Dict[str, Any]) -> Dict[str, float]:
         """
-        估算模型大小减少
+        Estimated model size reduction
 
         Args:
-            original_model: 原始模型
-            quantized_model: 量化后模型
+            original_model: original model
+            quantized_model: quantized model
 
         Returns:
-            大小对比统计
+            size comparison statistics
         """
-        # 计算原始大小（假设float32）
+        # Calculate original size（hypothesisfloat32）
         original_size = 0
         if hasattr(original_model, 'get_weights'):
             weights = original_model.get_weights()
             for weight_matrix in weights.values():
                 original_size += weight_matrix.nbytes
 
-        # 计算量化后大小（int8）
+        # Calculate the size after quantization（int8）
         quantized_size = 0
         for q_weight in quantized_model["quantized_model"].values():
             quantized_size += q_weight.nbytes
@@ -292,33 +289,33 @@ class ModelQuantization:
 
 class InferenceCache:
     """
-    推理缓存
+    inference cache
 
-    缓存常见状态的结果，避免重复计算
+    Caching results for common states，Avoid double counting
     """
 
     def __init__(self,
                  model: Any,
                  cache_size: int = 10000):
         """
-        初始化缓存
+        Initialize cache
 
         Args:
-            model: 模型
-            cache_size: 缓存大小
+            model: Model
+            cache_size: cache size
         """
         self.model = model
         self.cache_size = cache_size
 
-        # 使用LRU缓存
+        # useLRUcache
         self._cached_predict = lru_cache(maxsize=cache_size)(self._predict_uncached)
 
-        # 缓存统计（使用LRU缓存的内部统计）
+        # cache statistics（useLRUCached internal statistics）
         self.total_requests = 0
 
     def _predict_uncached(self, state_bytes: bytes) -> float:
-        """未缓存的预测（内部方法）"""
-        # 从bytes恢复状态（简化：默认float32一维向量）
+        """Uncached predictions（internal method）"""
+        # frombytesrestore state（simplify：defaultfloat32one-dimensional vector）
         state = np.frombuffer(state_bytes, dtype=np.float32)
 
         if hasattr(self.model, 'forward'):
@@ -327,28 +324,28 @@ class InferenceCache:
             probs = self.model.get_action_probs(state)
             return float(np.argmax(probs))
         else:
-            raise ValueError(f"未知的模型类型: {type(self.model)}")
+            raise ValueError(f"Unknown model type: {type(self.model)}")
 
     def predict(self, state: np.ndarray) -> float:
         """
-        预测（带缓存）
+        predict（With cache）
 
         Args:
-            state: 输入状态
+            state: input status
 
         Returns:
-            预测结果
+            Prediction results
         """
         self.total_requests += 1
 
-        # 计算状态hash
+        # Calculation statushash
         state_bytes = np.asarray(state, dtype=np.float32).tobytes()
 
-        # 使用LRU缓存
+        # useLRUcache
         return self._cached_predict(state_bytes)
 
     def get_cache_stats(self) -> Dict[str, Any]:
-        """获取缓存统计"""
+        """Get cache statistics"""
         cache_info = self._cached_predict.cache_info()
 
         total = cache_info.hits + cache_info.misses
@@ -363,46 +360,46 @@ class InferenceCache:
         }
 
     def clear_cache(self):
-        """清空缓存"""
+        """Clear cache"""
         self._cached_predict.cache_clear()
         self.total_requests = 0
 
 
 class JITOptimizer:
     """
-    JIT编译优化器
+    JITcompile optimizer
 
-    使用Numba JIT编译加速数值计算
+    useNumba JITCompilation speeds up numerical calculations
     """
 
     def __init__(self):
-        """初始化JIT优化器"""
+        """initializationJIToptimizer"""
         self.jit_enabled = NUMBA_AVAILABLE
 
         if self.jit_enabled:
-            logger.info("✅ Numba JIT已启用")
+            logger.info("✅ Numba JITEnabled")
         else:
-            logger.warning("⚠️ Numba不可用，JIT优化禁用")
+            logger.warning("⚠️ NumbaNot available，JITOptimization disabled")
 
     def optimize_function(self, func: Callable) -> Callable:
         """
-        优化函数
+        Optimization function
 
         Args:
-            func: 要优化的函数
+            func: function to optimize
 
         Returns:
-            优化后的函数
+            Optimized function
         """
         if not self.jit_enabled:
             return func
 
-        # 尝试JIT编译
+        # tryJITcompile
         try:
             optimized = njit(func)
             return optimized
         except Exception as e:
-            logger.warning(f"⚠️ JIT编译失败: {e}")
+            logger.warning(f"⚠️ JITCompilation failed: {e}")
             return func
 
     def benchmark(self,
@@ -410,26 +407,26 @@ class JITOptimizer:
                  *args,
                  n_iterations: int = 100) -> Dict[str, float]:
         """
-        性能基准测试
+        Performance benchmarks
 
         Args:
-            func: 要测试的函数
-            *args: 函数参数
-            n_iterations: 迭代次数
+            func: function to test
+            *args: Function parameters
+            n_iterations: Number of iterations
 
         Returns:
-            性能统计
+            Performance statistics
         """
         import time
 
-        # 预热
+        # preheat
         for _ in range(10):
             func(*args)
 
-        # 测试
+        # test
         start_time = time.time()
         for _ in range(n_iterations):
-            result = func(*args)
+            func(*args)
         end_time = time.time()
 
         total_time = end_time - start_time
@@ -444,13 +441,13 @@ class JITOptimizer:
 
 class PerformanceOptimizer:
     """
-    性能优化器（集成所有优化技术）
+    Performance optimizer（Integrate all optimization technologies）
 
-    完整的性能优化流程：
-    1. 批量推理
-    2. 模型量化
-    3. 推理缓存
-    4. JIT编译
+    Complete performance optimization process：
+    1. Batch inference
+    2. Model quantification
+    3. inference cache
+    4. JITcompile
     """
 
     def __init__(self,
@@ -460,14 +457,14 @@ class PerformanceOptimizer:
                  enable_cache: bool = True,
                  enable_jit: bool = False):
         """
-        初始化性能优化器
+        Initialize the performance optimizer
 
         Args:
-            model: 模型
-            enable_batch: 启用批量推理
-            enable_quantization: 启用量化
-            enable_cache: 启用缓存
-            enable_jit: 启用JIT
+            model: Model
+            enable_batch: Enable batch inference
+            enable_quantization: Enable quantization
+            enable_cache: Enable caching
+            enable_jit: enableJIT
         """
         self.model = model
         self.enable_batch = enable_batch
@@ -475,14 +472,14 @@ class PerformanceOptimizer:
         self.enable_cache = enable_cache
         self.enable_jit = enable_jit
 
-        # 初始化优化组件
+        # Initialize optimization components
         if enable_batch:
             self.batch_inference = BatchInference(model, batch_size=32)
 
         if enable_quantization:
             self.quantization = ModelQuantization()
             quantized = self.quantization.quantize_model(model)
-            self.quantized_model = quantized.get("quantized_model")
+            self.quantized_model: Dict[str, Any] = quantized
 
         if enable_cache:
             self.cache = InferenceCache(model, cache_size=10000)
@@ -490,7 +487,7 @@ class PerformanceOptimizer:
         if enable_jit:
             self.jit_optimizer = JITOptimizer()
 
-        # 性能统计
+        # Performance statistics
         self.optimization_stats = {
             "batch_inference": {"calls": 0, "total_batched": 0},
             "cache": self.cache.get_cache_stats() if enable_cache else {},
@@ -501,40 +498,40 @@ class PerformanceOptimizer:
 
     def predict(self, state: np.ndarray) -> float:
         """
-        优化后的预测
+        Optimized forecasts
 
         Args:
-            state: 输入状态
+            state: input status
 
         Returns:
-            预测结果
+            Prediction results
         """
-        # 批量推理
+        # Batch inference
         if self.enable_batch:
             result = self.batch_inference.predict(state)
             self.optimization_stats["batch_inference"]["calls"] += 1
             return result
 
-        # 缓存推理
+        # caching inference
         elif self.enable_cache:
             return self.cache.predict(state)
 
-        # 量化推理
+        # Quantitative reasoning
         elif self.enable_quantization:
-            # （简化：实际需要完整的量化推理逻辑）
+            # （simplify：Actually requires complete quantitative reasoning logic）
             if hasattr(self.model, 'forward'):
                 return self.model.forward(state)
 
-        # 默认推理
+        # default reasoning
         return self.model.forward(state)
 
     def flush(self):
-        """刷新所有队列"""
+        """Flush all queues"""
         if self.enable_batch:
             return self.batch_inference.flush()
 
     def get_stats(self) -> Dict[str, Any]:
-        """获取优化统计"""
+        """Get optimization statistics"""
         stats = {
             "batch_inference": self.optimization_stats["batch_inference"],
             "cache": self.cache.get_cache_stats() if self.enable_cache else {},
@@ -547,16 +544,16 @@ class PerformanceOptimizer:
         return stats
 
     def save_stats(self, filepath: str):
-        """保存统计信息"""
+        """Save statistics"""
         with open(filepath, 'w') as f:
             json.dump(self.get_stats(), f, indent=2)
 
-        logger.info(f"✅ 性能统计已保存: {filepath}")
+        logger.info(f"✅ Performance statistics saved: {filepath}")
 
 
 def main():
-    """测试性能优化器"""
-    # 创建模拟模型
+    """Test performance optimizer"""
+    # Create a simulation model
     class DummyModel:
         def __init__(self):
             self.weights = {
@@ -572,7 +569,7 @@ def main():
 
     model = DummyModel()
 
-    # 创建优化器
+    # Create optimizer
     optimizer = PerformanceOptimizer(
         model,
         enable_batch=True,
@@ -581,20 +578,20 @@ def main():
         enable_jit=False
     )
 
-    print(f"✅ 性能优化器已创建")
+    print("✅ Performance optimizer created")
 
-    # 测试预测
+    # Test predictions
     for i in range(100):
         state = np.random.randn(17)
-        result = optimizer.predict(state)
+        optimizer.predict(state)
 
-    # 获取统计
+    # Get statistics
     stats = optimizer.get_stats()
-    print(f"\n📊 性能统计:")
-    print(f"   批量推理调用: {stats['batch_inference']['calls']}")
-    print(f"   缓存命中率: {stats['cache'].get('hit_rate', 0):.2%}")
+    print("\n📊 Performance statistics:")
+    print(f"   Batch inference calls: {stats['batch_inference']['calls']}")
+    print(f"   Cache hit rate: {stats['cache'].get('hit_rate', 0):.2%}")
     if stats['quantization']:
-        print(f"   模型压缩率: {stats['quantization'].get('compression_rate', 0):.1f}%")
+        print(f"   Model compression rate: {stats['quantization'].get('compression_rate', 0):.1f}%")
 
 
 if __name__ == "__main__":

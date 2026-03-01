@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-integration CLI 基本可用性测试
+integration CLI Basic usability testing
 """
 
 import subprocess

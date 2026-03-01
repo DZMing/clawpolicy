@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-OpenClaw Alignment - 灾难恢复演示
-展示场景 A（危险 Agent 失控）vs 场景 B（openclaw-alignment 阻断）
+OpenClaw Alignment - Disaster Recovery Demonstration
+show scene A（Danger Agent out of control）vs scene B（openclaw-alignment block）
 """
 
 import time
-import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -17,56 +16,56 @@ console = Console(width=100)
 
 
 def print_header(title: str, color: str):
-    """打印标题"""
+    """Print title"""
     text = Text(title, style=f"bold {color}")
     console.print(Align.center(text))
     console.print()
 
 
 def scene_a_dangerous_agent():
-    """场景 A: 危险 Agent 失控"""
-    print_header("⚠️  场景 A: 未受保护的 Agent（失控）", "red")
+    """scene A: Danger Agent out of control"""
+    print_header("⚠️  scene A: unprotected Agent（out of control）", "red")
 
-    # 模拟用户输入模糊指令
+    # Simulate user input of fuzzy instructions
     console.print("[bold cyan]$[/bold cyan] clean-workspace --aggressive", end="")
     time.sleep(0.5)
     console.print()
 
     console.print()
-    console.print("[dim]🤖 Agent 收到指令，开始执行...[/dim]")
+    console.print("[dim]🤖 Agent received instructions，Start execution...[/dim]")
     time.sleep(1)
 
-    # Agent 开始执行高危操作
+    # Agent Start performing high-risk operations
     console.print()
-    console.print("[bold red]🚨 警告：检测到高危操作！[/bold red]")
+    console.print("[bold red]🚨 warn：High risk operation detected！[/bold red]")
     console.print()
 
-    table = Table(title="Agent 执行计划", box=box.ROUNDED, border_style="red")
-    table.add_column("步骤", style="cyan", width=20)
-    table.add_column("操作", style="yellow")
-    table.add_column("风险等级", justify="center")
+    table = Table(title="Agent execution plan", box=box.ROUNDED, border_style="red")
+    table.add_column("step", style="cyan", width=20)
+    table.add_column("operate", style="yellow")
+    table.add_column("risk level", justify="center")
 
-    table.add_row("1", "扫描工作目录", "🟡 中")
-    table.add_row("2", "执行 rm -rf node_modules", "🟠 高")
-    table.add_row("3", "执行 rm -rf .git", "🔴 极高")
-    table.add_row("4", "执行 rm -rf src/*", "🔴 极高")
-    table.add_row("5", "删除所有配置文件", "🔴 极高")
+    table.add_row("1", "Scan working directory", "🟡 middle")
+    table.add_row("2", "implement rm -rf node_modules", "🟠 high")
+    table.add_row("3", "implement rm -rf .git", "🔴 extremely high")
+    table.add_row("4", "implement rm -rf src/*", "🔴 extremely high")
+    table.add_row("5", "Delete all profiles", "🔴 extremely high")
 
     console.print(table)
     time.sleep(1.5)
 
-    # Agent 开始失控执行
+    # Agent Start running out of control
     console.print()
-    console.print("[dim]🔄 Agent 正在执行:[/dim]")
+    console.print("[dim]🔄 Agent Executing:[/dim]")
     console.print()
 
     steps = [
-        ("扫描工作目录...", "1000+ files found"),
-        ("删除 node_modules...", "rm -rf node_modules ✓"),
-        ("删除 .git 目录...", "rm -rf .git ✓"),
-        ("删除源代码...", "rm -rf src/* ✓"),
-        ("删除配置...", "rm -rf *.json ✓"),
-        ("删除文档...", "rm -rf *.md ✓"),
+        ("Scan working directory...", "1000+ files found"),
+        ("delete node_modules...", "rm -rf node_modules ✓"),
+        ("delete .git Table of contents...", "rm -rf .git ✓"),
+        ("Remove source code...", "rm -rf src/* ✓"),
+        ("Delete configuration...", "rm -rf *.json ✓"),
+        ("Delete document...", "rm -rf *.md ✓"),
     ]
 
     for step, result in steps:
@@ -75,13 +74,13 @@ def scene_a_dangerous_agent():
         console.print(f"[dim]    {result}[/dim]")
         console.print()
 
-    # 灾难结果
+    # Disaster outcome
     console.print(Panel(
-        "[bold red]💥 灾难已发生！[/bold red]\n\n"
-        "工作目录已被清空\n"
-        "所有代码、配置、历史记录丢失\n"
-        "无法恢复！",
-        title="[bold white on red]⛔ 数据丢失",
+        "[bold red]💥 Disaster has occurred！[/bold red]\n\n"
+        "The working directory has been cleared\n"
+        "All codes、Configuration、History lost\n"
+        "Unable to recover！",
+        title="[bold white on red]⛔ data loss",
         border_style="red",
         padding=(1, 2)
     ))
@@ -91,46 +90,46 @@ def scene_a_dangerous_agent():
 
 
 def scene_b_openclaw_alignment():
-    """场景 B: OpenClaw Alignment 阻断与自愈"""
-    print_header("✅ 场景 B: 接入 OpenClaw Alignment（安全）", "green")
+    """scene B: OpenClaw Alignment Blocking and self-healing"""
+    print_header("✅ scene B: Access OpenClaw Alignment（Safety）", "green")
 
-    # 模拟用户输入同样的模糊指令
+    # Simulate the user entering the same vague command
     console.print("[bold cyan]$[/bold cyan] clean-workspace --aggressive", end="")
     time.sleep(0.5)
     console.print()
 
     console.print()
-    console.print("[dim]🛡️  OpenClaw Alignment Commander 节点接管...[/dim]")
+    console.print("[dim]🛡️  OpenClaw Alignment Commander Node takeover...[/dim]")
     time.sleep(1)
 
-    # Commander 节点分析
+    # Commander Node analysis
     console.print()
-    console.print("[bold cyan]📊 Commander 节点分析:[/bold cyan]")
+    console.print("[bold cyan]📊 Commander Node analysis:[/bold cyan]")
     console.print()
 
-    table = Table(title="指令分析", box=box.ROUNDED, border_style="cyan")
-    table.add_column("分析步骤", style="cyan", width=25)
-    table.add_column("结果", style="white")
+    table = Table(title="Instruction analysis", box=box.ROUNDED, border_style="cyan")
+    table.add_column("Analysis steps", style="cyan", width=25)
+    table.add_column("result", style="white")
 
-    table.add_row("读取 SOUL.md", "✅ 获取系统边界规则")
-    table.add_row("读取 USER.md", "✅ 获取用户偏好")
-    table.add_row("读取 AGENTS.md", "✅ 获取可用工具")
-    table.add_row("意图识别", "⚠️  检测到高危意图")
-    table.add_row("风险评估", "🔴 风险等级: 极高")
+    table.add_row("read SOUL.md", "✅ Get system boundary rules")
+    table.add_row("read USER.md", "✅ Get user preferences")
+    table.add_row("read AGENTS.md", "✅ Get available tools")
+    table.add_row("Intent recognition", "⚠️  High-risk intent detected")
+    table.add_row("risk assessment", "🔴 risk level: extremely high")
 
     console.print(table)
     time.sleep(1.5)
 
-    # 安全检查流程
+    # Security check process
     console.print()
-    console.print("[bold yellow]🔒 安全检查流程:[/bold yellow]")
+    console.print("[bold yellow]🔒 Security check process:[/bold yellow]")
     console.print()
 
     checks = [
-        ("检查操作列表", ["删除 node_modules", "删除 .git", "删除 src/*"]),
-        ("检查边界规则", "❌ 违反 SOUL.md 第4条：禁止数据丢失操作"),
-        ("检查用户权限", "⚠️  需要用户明确确认"),
-        ("沙盒测试准备", "✅ 在隔离环境中验证操作"),
+        ("Check action list", ["delete node_modules", "delete .git", "delete src/*"]),
+        ("Check boundary rules", "❌ violation SOUL.md No.4strip：Disable data loss operations"),
+        ("Check user permissions", "⚠️  Requires explicit confirmation from the user"),
+        ("Sandbox test preparation", "✅ Verify operations in an isolated environment"),
     ]
 
     for check_name, details in checks:
@@ -143,16 +142,16 @@ def scene_b_openclaw_alignment():
         console.print()
         time.sleep(0.4)
 
-    # Fail-closed 熔断
+    # Fail-closed fuse
     console.print(Panel(
-        "[bold red]⛔ Fail-Closed 熔断机制触发！[/bold red]\n\n"
-        "[white]检测到高危操作序列：[/white]\n"
+        "[bold red]⛔ Fail-Closed Circuit breaker trigger！[/bold red]\n\n"
+        "[white]High-risk operation sequence detected：[/white]\n"
         "[dim]  1. rm -rf node_modules[/dim]\n"
         "[dim]  2. rm -rf .git[/dim]\n"
         "[dim]  3. rm -rf src/*[/dim]\n\n"
-        "[bold yellow]系统已阻止执行！[/bold yellow]\n\n"
-        "[green]✅ 数据安全得到保护[/green]",
-        title="[bold white on red]🛡️ 安全阻断",
+        "[bold yellow]The system has blocked execution！[/bold yellow]\n\n"
+        "[green]✅ Data security is protected[/green]",
+        title="[bold white on red]🛡️ safety blocking",
         border_style="red",
         padding=(1, 2)
     ))
@@ -160,99 +159,99 @@ def scene_b_openclaw_alignment():
     console.print()
     time.sleep(1.5)
 
-    # 向用户请求确认
-    console.print("[bold cyan]📋 建议的安全操作方案:[/bold cyan]")
+    # Request confirmation from user
+    console.print("[bold cyan]📋 Recommended safe operations:[/bold cyan]")
     console.print()
 
     safe_table = Table(box=box.SIMPLE, border_style="green")
-    safe_table.add_column("替代方案", style="green", width=30)
-    safe_table.add_column("说明", style="white")
+    safe_table.add_column("alternatives", style="green", width=30)
+    safe_table.add_column("illustrate", style="white")
 
     safe_table.add_row(
-        "清理缓存文件",
-        "[dim]仅删除 __pycache__, .pytest_cache[/dim]"
+        "Clean cache files",
+        "[dim]Delete only __pycache__, .pytest_cache[/dim]"
     )
     safe_table.add_row(
-        "清理构建产物",
-        "[dim]仅删除 dist/, build/, *.egg-info[/dim]"
+        "Clean build artifacts",
+        "[dim]Delete only dist/, build/, *.egg-info[/dim]"
     )
     safe_table.add_row(
-        "清理依赖重装",
-        "[dim]保留 package.json，删除 node_modules 后重新安装[/dim]"
+        "Clean dependencies and reinstall",
+        "[dim]reserve package.json，delete node_modules reinstall after[/dim]"
     )
 
     console.print(safe_table)
     console.print()
 
-    # 询问用户
-    console.print("[bold yellow]❓ 是否执行安全的清理方案？[/bold yellow]")
-    console.print("[dim](输入 y 确认，或输入其他键取消)[/dim]")
+    # Ask user
+    console.print("[bold yellow]❓ Whether to implement a safe cleanup plan？[/bold yellow]")
+    console.print("[dim](enter y confirm，Or enter other keys to cancel)[/dim]")
 
 
 def main():
-    """主函数"""
+    """main function"""
     console.clear()
 
-    # 显示标题
+    # show title
     console.print()
-    print_header("OpenClaw Alignment - 灾难恢复演示", "white")
+    print_header("OpenClaw Alignment - Disaster Recovery Demonstration", "white")
 
     console.print(Panel(
-        "[bold cyan]本演示对比两种场景：[/bold cyan]\n\n"
-        "[bold red]场景 A：[/bold red] 未受保护的 Agent 接收模糊指令后失控执行\n"
-        "[bold green]场景 B：[/bold green] 接入 openclaw-alignment 后成功阻断高危操作",
-        title="[bold white]演示说明",
+        "[bold cyan]This demonstration compares two scenarios：[/bold cyan]\n\n"
+        "[bold red]scene A：[/bold red] unprotected Agent Out-of-control execution after receiving ambiguous instructions\n"
+        "[bold green]scene B：[/bold green] Access openclaw-alignment Successfully blocked high-risk operations",
+        title="[bold white]Demo instructions",
         border_style="white",
         padding=(1, 2)
     ))
 
     console.print()
-    console.print("[dim]按任意键继续...[/dim]")
+    console.print("[dim]Press any key to continue...[/dim]")
     console.input()
 
-    # 场景 A
+    # scene A
     scene_a_dangerous_agent()
 
     console.print()
     console.print(Panel(
-        "[bold red]❌ 场景 A 结束：数据已丢失[/bold red]",
+        "[bold red]❌ scene A Finish：Data has been lost[/bold red]",
         border_style="red"
     ))
     console.print()
 
-    console.print("[dim]按任意键继续查看场景 B...[/dim]")
+    console.print("[dim]Press any key to continue viewing the scene B...[/dim]")
     console.input()
 
     console.clear()
 
-    # 场景 B
+    # scene B
     scene_b_openclaw_alignment()
 
     console.print()
     console.print(Panel(
-        "[bold green]✅ 场景 B 结束：系统成功保护数据[/bold green]",
+        "[bold green]✅ scene B Finish：System successfully protects data[/bold green]",
         border_style="green"
     ))
     console.print()
 
-    # 最终确认
-    console.print("[bold yellow]❓ 是否执行安全的清理方案？ (y/N): [/bold yellow]", end=" ")
+    # final confirmation
+    console.print("[bold yellow]❓ Whether to implement a safe cleanup plan？ (y/N): [/bold yellow]", end=" ")
     response = console.input().strip().lower()
 
     if response == 'y':
         console.print()
         console.print(Panel(
-            "[bold green]✅ 已确认执行安全方案[/bold green]\n\n"
-            "[dim]正在清理缓存文件...[/dim]\n"
-            "[dim]✓ 清理完成[/dim]\n\n"
-            "[green]🎉 演示结束！OpenClaw Alignment 成功保护您的数据！[/green]",
+            "[bold green]✅ Confirmed implementation of security plan[/bold green]\n\n"
+            "[dim]Cleaning cache files...[/dim]\n"
+            "[dim]✓ Cleanup completed[/dim]\n\n"
+            "[green]🎉 End of presentation！OpenClaw Alignment Successfully protect your data！[/green]",
             border_style="green"
         ))
     else:
         console.print()
         console.print(Panel(
-            "[bold yellow]⏹️  已取消操作[/bold yellow]\n\n"
-            "[green]🎉 演示结束！OpenClaw Alignment 成功阻止了危险操作！[/green]",
+            "[bold yellow]⏹️  Operation canceled[/bold yellow]\n\n"
+            "[green]🎉 End of presentation！OpenClaw Alignment Successfully prevented dangerous operations！[/green]",
             border_style="yellow"
         ))
 

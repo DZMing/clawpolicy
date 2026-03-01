@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-检查README关键指标与代码真实状态是否一致。
+Check whether README key metrics match the actual code state.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from lib.contracts import ACTION_VECTOR_DIM
+from lib.contracts import ACTION_VECTOR_DIM  # noqa: E402
 
 
 def _extract_first_int(pattern: str, content: str) -> Optional[int]:
@@ -26,7 +26,7 @@ def _extract_first_int(pattern: str, content: str) -> Optional[int]:
 
 
 def collect_pytest_count(repo_root: Path) -> int:
-    """通过pytest收集真实测试总数。"""
+    """Collect real test count via pytest."""
     result = subprocess.run(
         [sys.executable, "-m", "pytest", "tests", "--collect-only", "-q"],
         cwd=repo_root,
@@ -42,7 +42,7 @@ def collect_pytest_count(repo_root: Path) -> int:
     if count is not None:
         return count
 
-    # pytest 在部分配置下会输出每个文件的测试数量：
+    # Under some configs pytest prints per-file counts:
     # tests/test_x.py: 5
     line_counts = re.findall(r"^tests/.+:\s*(\d+)\s*$", output, flags=re.MULTILINE)
     if line_counts:
@@ -54,44 +54,50 @@ def collect_pytest_count(repo_root: Path) -> int:
 def validate_readme_metrics(repo_root: Path, expected_tests: int) -> list[str]:
     errors: list[str] = []
 
-    zh_content = (repo_root / "README.md").read_text(encoding="utf-8")
-    en_content = (repo_root / "README_EN.md").read_text(encoding="utf-8")
+    en_content = (repo_root / "README.md").read_text(encoding="utf-8")
+    zh_path = repo_root / "README.zh-CN.md"
+    zh_content = zh_path.read_text(encoding="utf-8") if zh_path.exists() else ""
 
-    zh_tests = _extract_first_int(r"\*\*总测试数\*\*:\s*(\d+)个", zh_content)
+    # Legacy README.zh-CN.md may be translated to English-only content and
+    # omit metric blocks entirely. Treat zh fields as optional compatibility checks.
+    zh_tests = _extract_first_int(r"\*\*Total Tests\*\*:\s*(\d+)", zh_content)
+    if zh_tests is None:
+        zh_tests = _extract_first_int(r"\*\*Total number of tests\*\*:\s*(\d+)", zh_content)
     en_tests = _extract_first_int(r"\*\*Total Tests\*\*:\s*(\d+)", en_content)
-    zh_action_dim = _extract_first_int(r"Action:\s*动作数据类（(\d+)维）", zh_content)
+    zh_action_dim = _extract_first_int(
+        r"`Action`:\s*Action data class \((\d+) dimensions\)",
+        zh_content,
+    )
+    if zh_action_dim is None:
+        zh_action_dim = _extract_first_int(r"Action:\s*action data class.*?(\d+)", zh_content)
     en_action_dim = _extract_first_int(
         r"`Action`:\s*Action data class \((\d+) dimensions\)",
         en_content,
     )
 
-    if zh_tests is None:
-        errors.append("README.md 缺少“总测试数”字段。")
-    elif zh_tests != expected_tests:
-        errors.append(f"README.md 总测试数={zh_tests}，应为 {expected_tests}。")
+    if zh_tests is not None and zh_tests != expected_tests:
+        errors.append(f"README.zh-CN.md Total Tests={zh_tests}, expected {expected_tests}.")
 
     if en_tests is None:
-        errors.append("README_EN.md 缺少“Total Tests”字段。")
+        errors.append("README.md is missing the 'Total Tests' field.")
     elif en_tests != expected_tests:
-        errors.append(f"README_EN.md Total Tests={en_tests}，应为 {expected_tests}。")
+        errors.append(f"README.md Total Tests={en_tests}, expected {expected_tests}.")
 
-    if zh_action_dim is None:
-        errors.append("README.md 缺少Action维度字段。")
-    elif zh_action_dim != ACTION_VECTOR_DIM:
-        errors.append(f"README.md Action维度={zh_action_dim}，应为 {ACTION_VECTOR_DIM}。")
+    if zh_action_dim is not None and zh_action_dim != ACTION_VECTOR_DIM:
+        errors.append(f"README.zh-CN.md Action dimension={zh_action_dim}, expected {ACTION_VECTOR_DIM}.")
 
     if en_action_dim is None:
-        errors.append("README_EN.md 缺少Action dimension字段。")
+        errors.append("README.md is missing the action dimension field.")
     elif en_action_dim != ACTION_VECTOR_DIM:
-        errors.append(f"README_EN.md Action dimensions={en_action_dim}，应为 {ACTION_VECTOR_DIM}。")
+        errors.append(f"README.md Action dimensions={en_action_dim}, expected {ACTION_VECTOR_DIM}.")
 
-    if "<repository_url>" in zh_content:
-        errors.append("README.md 仍包含 <repository_url> 占位符。")
+    if "<repository_url>" in en_content:
+        errors.append("README.md still contains the <repository_url> placeholder.")
 
     required_files = ["requirements.txt", "requirements-full.txt", "requirements-dev.txt"]
     for rel in required_files:
         if not (repo_root / rel).exists():
-            errors.append(f"缺少依赖文件: {rel}")
+            errors.append(f"Missing dependency file: {rel}")
 
     governance_files = [
         "CHANGELOG.md",
@@ -108,20 +114,20 @@ def validate_readme_metrics(repo_root: Path, expected_tests: int) -> list[str]:
     ]
     for rel in governance_files:
         if not (repo_root / rel).exists():
-            errors.append(f"缺少治理文档: {rel}")
+            errors.append(f"Missing governance document: {rel}")
 
     manifest_content = (repo_root / "MANIFEST.in").read_text(encoding="utf-8")
     for rel in governance_files:
         if f"include {rel}" not in manifest_content:
-            errors.append(f"MANIFEST.in 未包含治理文档: {rel}")
+            errors.append(f"MANIFEST.in does not include governance doc: {rel}")
 
     security_en = (repo_root / "SECURITY.md").read_text(encoding="utf-8")
     security_zh = (repo_root / "SECURITY.zh-CN.md").read_text(encoding="utf-8")
     advisory_url = "https://github.com/412984588/openclaw-alignment/security/advisories/new"
     if advisory_url not in security_en:
-        errors.append("SECURITY.md 缺少 GitHub 私有安全通告链接。")
+        errors.append("SECURITY.md is missing the GitHub private advisory link.")
     if advisory_url not in security_zh:
-        errors.append("SECURITY.zh-CN.md 缺少 GitHub 私有安全通告链接。")
+        errors.append("SECURITY.zh-CN.md is missing the GitHub private advisory link.")
 
     return errors
 
@@ -132,7 +138,7 @@ def main() -> int:
     try:
         total_tests = collect_pytest_count(repo_root)
         errors = validate_readme_metrics(repo_root, total_tests)
-    except Exception as exc:  # pragma: no cover - CLI兜底
+    except Exception as exc:  # pragma: no cover - CLI fallback
         print(f"[docs-check] ERROR: {exc}")
         return 1
 

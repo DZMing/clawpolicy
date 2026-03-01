@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-文档一致性检查脚本测试
+Document consistency check script testing
 """
 
 import subprocess

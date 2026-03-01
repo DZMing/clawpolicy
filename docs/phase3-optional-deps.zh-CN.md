@@ -1,16 +1,7 @@
-# Phase3 可选依赖
+# Phase3 Optional Dependencies (Legacy zh-CN Path)
 
-安装方式：
+This file path is kept for backward compatibility.
 
-```bash
-pip install "openclaw-alignment[phase3]"
-```
+Use the primary English document:
 
-功能映射：
-
-- `redis`、`celery`：分布式训练
-- `torch`、`tensorboard`：神经网络与监控
-- `numba`：JIT 优化
-- `scipy`：指标分析中的高级拟合
-
-缺少依赖时，系统会自动降级。
+- docs/phase3-optional-deps.md

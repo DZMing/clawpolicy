@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-IntentAlignmentEngine行为测试
+IntentAlignmentEngineBehavioral testing
 """
 
 import json

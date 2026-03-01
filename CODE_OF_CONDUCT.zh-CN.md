@@ -1,14 +1,7 @@
-# 行为准则
+# Code of Conduct (Legacy zh-CN Path)
 
-我们致力于建设友好、无骚扰的社区环境。
+This file path is kept for backward compatibility.
 
-## 社区标准
+Use the primary English guide:
 
-- 保持尊重、建设性沟通。
-- 默认善意，围绕技术事实讨论。
-- 禁止骚扰、辱骂、歧视、人肉等行为。
-
-## 执行
-
-如有违规，请通过 `SECURITY.zh-CN.md` 中的私密渠道联系维护者。
-维护者有权删除违规内容或限制相关账号参与。
+- CODE_OF_CONDUCT.md

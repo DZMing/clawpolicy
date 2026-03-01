@@ -1,9 +1,7 @@
-# 配置说明
+# Configuration (Legacy zh-CN Path)
 
-默认配置路径：
+This file path is kept for backward compatibility.
 
-- Linux/macOS：`$XDG_CONFIG_HOME/openclaw-alignment/config.json`（回退 `~/.config/...`）
-- Windows：`%APPDATA%/openclaw-alignment/config.json`
-- 同时兼容 legacy 路径用于向后兼容。
+Use the primary English document:
 
-示例配置见 `config/config.example.json`。
+- docs/configuration.md

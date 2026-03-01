@@ -1,46 +1,45 @@
 #!/usr/bin/env python3
 """
-测试意图对齐功能
+Test intent alignment functionality
 """
 
 import sys
-import os
 from pathlib import Path
 
-# 添加项目根目录到路径
+# Add project root directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from lib.integration import IntentAlignmentEngine
 
 
 def test_collector():
-    """测试数据收集"""
+    """Test data collection"""
     print("="*50)
-    print("测试1: 数据收集")
+    print("test1: data collection")
     print("="*50)
 
     engine = IntentAlignmentEngine(".")
     git_data = engine.collector.collect(50)
 
-    assert git_data is not None, "数据收集失败"
-    assert "tech_stack" in git_data, "缺少技术栈数据"
-    assert "metadata" in git_data, "缺少元数据"
+    assert git_data is not None, "Data collection failed"
+    assert "tech_stack" in git_data, "Missing technology stack data"
+    assert "metadata" in git_data, "Missing metadata"
 
-    print("✅ 数据收集测试通过")
+    print("✅ Data collection test passed")
     print()
 
 
 def test_learner():
-    """测试学习算法"""
+    """Test learning algorithms"""
     print("="*50)
-    print("测试2: 学习算法")
+    print("test2: learning algorithm")
     print("="*50)
 
-    # 创建engine
+    # createengine
     from lib.learner import PreferenceLearner
     learner = PreferenceLearner()
 
-    # 模拟数据
+    # simulated data
     mock_data = {
         "tech_stack": {
             "python": 10,
@@ -58,50 +57,50 @@ def test_learner():
 
     preferences = learner.learn_from_git_history(mock_data)
 
-    assert preferences is not None, "学习失败"
-    assert "tech_stack" in preferences, "缺少技术栈偏好"
-    assert preferences["tech_stack"]["primary"] == "python", "主要技术识别错误"
+    assert preferences is not None, "learning failure"
+    assert "tech_stack" in preferences, "Missing technology stack preference"
+    assert preferences["tech_stack"]["primary"] == "python", "Major technical identification errors"
 
-    print("✅ 学习算法测试通过")
+    print("✅ Learning algorithm test passed")
     print()
 
 
 def test_integration():
-    """测试完整集成"""
+    """Test full integration"""
     print("="*50)
-    print("测试3: 完整集成")
+    print("test3: Full integration")
     print("="*50)
 
     engine = IntentAlignmentEngine(".")
 
-    # 运行分析
+    # Run analysis
     result = engine.run_analysis(10)
 
-    assert result is not None, "分析失败"
-    assert "tech_stack" in result, "缺少技术栈结果"
+    assert result is not None, "Analysis failed"
+    assert "tech_stack" in result, "Missing technology stack results"
 
-    print("✅ 集成测试通过")
+    print("✅ Integration test passed")
     print()
 
 
 def main():
-    """运行所有测试"""
-    print("\n🧪 开始测试意图对齐功能...\n")
+    """Run all tests"""
+    print("\n🧪 Start testing the intent alignment feature...\n")
 
     try:
         test_collector()
         test_learner()
-        # test_integration()  # 需要Git仓库，暂时跳过
+        # test_integration()  # needGitstorehouse，Skip for now
 
         print("="*50)
-        print("✅ 所有测试通过！")
+        print("✅ All tests passed！")
         print("="*50)
 
     except AssertionError as e:
-        print(f"❌ 测试失败: {e}")
+        print(f"❌ test failed: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ 错误: {e}")
+        print(f"❌ mistake: {e}")
         sys.exit(1)
 
 

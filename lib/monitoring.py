@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-监控面板 - TensorBoard集成与训练可视化
+Monitoring panel - TensorBoardIntegration and training visualization
 
-实现完整的训练监控功能：
-- TensorBoard日志记录
-- 奖励曲线可视化
-- 损失曲线追踪
-- 超参数对比
-- 模型性能分析
+Realize complete training monitoring function：
+- TensorBoardlogging
+- Reward Curve Visualization
+- loss curve tracking
+- Hyperparameter comparison
+- Model performance analysis
 
-Phase 3.3 - 预计180行
+Phase 3.3 - expected180OK
 """
 
 import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 from pathlib import Path
 import json
 from datetime import datetime
@@ -21,40 +21,41 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# 尝试导入TensorBoard
+# try to importTensorBoard
 try:
-    from torch.utils.tensorboard import SummaryWriter
+    from torch.utils import tensorboard as _tensorboard
+    _SummaryWriterFactory: Any = _tensorboard.SummaryWriter
     TENSORBOARD_AVAILABLE = True
 except ImportError:
     TENSORBOARD_AVAILABLE = False
-    SummaryWriter = None
+    _SummaryWriterFactory = None
 
 
 class TrainingMonitor:
     """
-    训练监控器
+    training monitor
 
-    功能：
-    - TensorBoard日志记录
-    - 指标追踪（奖励、损失、性能）
-    - 检查点比较
-    - 训练报告生成
+    Function：
+    - TensorBoardlogging
+    - Metric tracking（award、loss、performance）
+    - Checkpoint comparison
+    - Training report generation
     """
 
     def __init__(self,
                  log_dir: str = "./logs/tensorboard",
-                 experiment_name: str = None):
+                 experiment_name: str | None = None):
         """
-        初始化监控器
+        Initialize monitor
 
         Args:
-            log_dir: 日志目录
-            experiment_name: 实验名称
+            log_dir: Log directory
+            experiment_name: Experiment name
         """
         self.log_dir = Path(log_dir).expanduser()
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
-        # 创建实验目录
+        # Create experiment directory
         if experiment_name:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             self.experiment_dir = self.log_dir / f"{experiment_name}_{timestamp}"
@@ -63,49 +64,49 @@ class TrainingMonitor:
 
         self.experiment_dir.mkdir(parents=True, exist_ok=True)
 
-        # 初始化TensorBoard writer
+        # initializationTensorBoard writer
         self.tensorboard_enabled = TENSORBOARD_AVAILABLE
+        self.writer: Any | None = None
         if self.tensorboard_enabled:
-            self.writer = SummaryWriter(log_dir=str(self.experiment_dir))
-            logger.info(f"✅ TensorBoard已启用: {self.experiment_dir}")
+            self.writer = _SummaryWriterFactory(log_dir=str(self.experiment_dir))
+            logger.info(f"✅ TensorBoardEnabled: {self.experiment_dir}")
         else:
-            self.writer = None
-            logger.warning("⚠️ TensorBoard不可用，使用降级模式（JSON日志）")
+            logger.warning("⚠️ TensorBoardNot available，Use degraded mode（JSONlog）")
 
-        # 指标记录
+        # Indicator record
         self.metrics_history: Dict[str, List[Tuple[int, float]]] = {}
         self._closed = False
 
     def log_scalar(self, tag: str, value: float, step: int):
         """
-        记录标量指标
+        Logging scalar metrics
 
         Args:
-            tag: 指标标签（如"train/reward", "train/loss"）
-            value: 指标值
-            step: 步数
+            tag: Indicator label（like"train/reward", "train/loss"）
+            value: indicator value
+            step: number of steps
         """
         if self.tensorboard_enabled and self.writer:
             self.writer.add_scalar(tag, value, step)
 
-        # 同时记录到内存（用于降级模式）
+        # Record to memory simultaneously（for downgrade mode）
         if tag not in self.metrics_history:
             self.metrics_history[tag] = []
         self.metrics_history[tag].append((step, value))
 
     def log_scalars(self, main_tag: str, tag_scalar_dict: Dict[str, float], step: int):
         """
-        批量记录标量指标
+        Logging scalar metrics in batches
 
         Args:
-            main_tag: 主标签
-            tag_scalar_dict: 标签-值字典
-            step: 步数
+            main_tag: main label
+            tag_scalar_dict: Label-value dictionary
+            step: number of steps
         """
         if self.tensorboard_enabled and self.writer:
             self.writer.add_scalars(main_tag, tag_scalar_dict, step)
 
-        # 记录到内存
+        # Record to memory
         for sub_tag, value in tag_scalar_dict.items():
             full_tag = f"{main_tag}/{sub_tag}"
             if full_tag not in self.metrics_history:
@@ -114,26 +115,25 @@ class TrainingMonitor:
 
     def log_histogram(self, tag: str, values: np.ndarray, step: int):
         """
-        记录直方图
+        Record histogram
 
         Args:
-            tag: 标签
-            values: 值数组
-            step: 步数
+            tag: Label
+            values: value array
+            step: number of steps
         """
         if self.tensorboard_enabled and self.writer:
             self.writer.add_histogram(tag, values, step)
 
     def log_hyperparams(self, hparam_dict: Dict[str, Any], metric_dict: Dict[str, float]):
         """
-        记录超参数和最终指标
+        Record hyperparameters and final metrics
 
         Args:
-            hparam_dict: 超参数字典
-            metric_dict: 指标字典
+            hparam_dict: Hyperparameter dictionary
+            metric_dict: indicator dictionary
         """
         if self.tensorboard_enabled and self.writer:
-            from torch.utils.tensorboard.summary import hparams
             self.writer.add_hparams(hparam_dict, metric_dict)
 
     def log_training_step(self,
@@ -141,23 +141,23 @@ class TrainingMonitor:
                          reward: float,
                          actor_loss: float,
                          critic_loss: float,
-                         extra_metrics: Dict[str, float] = None):
+                         extra_metrics: Dict[str, float] | None = None):
         """
-        记录训练步骤（便捷方法）
+        Record training steps（Convenience method）
 
         Args:
-            episode: Episode数
-            reward: 奖励
-            actor_loss: Actor损失
-            critic_loss: Critic损失
-            extra_metrics: 额外指标
+            episode: Episodenumber
+            reward: award
+            actor_loss: Actorloss
+            critic_loss: Criticloss
+            extra_metrics: additional indicators
         """
-        # 记录主要指标
+        # Record key indicators
         self.log_scalar("train/reward", reward, episode)
         self.log_scalar("train/actor_loss", actor_loss, episode)
         self.log_scalar("train/critic_loss", critic_loss, episode)
 
-        # 记录额外指标
+        # Record additional metrics
         if extra_metrics:
             for key, value in extra_metrics.items():
                 self.log_scalar(f"train/{key}", value, episode)
@@ -166,15 +166,15 @@ class TrainingMonitor:
                       episode: int,
                       eval_reward: float,
                       eval_success_rate: float,
-                      eval_metrics: Dict[str, float] = None):
+                      eval_metrics: Dict[str, float] | None = None):
         """
-        记录评估指标
+        Record evaluation metrics
 
         Args:
-            episode: Episode数
-            eval_reward: 评估奖励
-            eval_success_rate: 成功率
-            eval_metrics: 额外评估指标
+            episode: Episodenumber
+            eval_reward: Evaluation rewards
+            eval_success_rate: success rate
+            eval_metrics: Additional evaluation metrics
         """
         self.log_scalar("eval/reward", eval_reward, episode)
         self.log_scalar("eval/success_rate", eval_success_rate, episode)
@@ -185,16 +185,16 @@ class TrainingMonitor:
 
     def log_model_weights(self, tag: str, weights: np.ndarray, step: int):
         """
-        记录模型权重分布
+        Record model weight distribution
 
         Args:
-            tag: 标签（如"policy_net/layer1"）
-            weights: 权重数组
-            step: 步数
+            tag: Label（like"policy_net/layer1"）
+            weights: weight array
+            step: number of steps
         """
         self.log_histogram(tag, weights, step)
 
-        # 记录统计量
+        # Record statistics
         self.log_scalars(
             f"{tag}/stats",
             {
@@ -206,15 +206,15 @@ class TrainingMonitor:
             step
         )
 
-    def save_metrics_to_json(self, filename: str = None) -> str:
+    def save_metrics_to_json(self, filename: str | None = None) -> str:
         """
-        保存指标到JSON文件（降级模式）
+        Save the indicator toJSONdocument（downgrade mode）
 
         Args:
-            filename: 文件名
+            filename: file name
 
         Returns:
-            文件路径
+            file path
         """
         if not filename:
             filename = f"metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -224,15 +224,15 @@ class TrainingMonitor:
         with open(filepath, 'w') as f:
             json.dump(self.metrics_history, f, indent=2)
 
-        logger.info(f"✅ 指标已保存: {filepath}")
+        logger.info(f"✅ Indicator saved: {filepath}")
         return str(filepath)
 
     def get_metrics_summary(self) -> Dict[str, Any]:
         """
-        获取指标汇总
+        Get indicator summary
 
         Returns:
-            指标汇总统计
+            Indicator summary statistics
         """
         summary = {}
 
@@ -255,24 +255,24 @@ class TrainingMonitor:
 
         return summary
 
-    def plot_metrics(self, tags: List[str] = None, save_path: str = None):
+    def plot_metrics(self, tags: List[str] | None = None, save_path: str | Path | None = None):
         """
-        绘制指标曲线（降级模式）
+        Draw indicator curve（downgrade mode）
 
         Args:
-            tags: 要绘制的指标标签（None=全部）
-            save_path: 保存路径
+            tags: Indicator labels to plot（None=all）
+            save_path: save path
         """
         try:
             import matplotlib.pyplot as plt
         except ImportError:
-            logger.warning("⚠️ matplotlib不可用，无法绘图")
+            logger.warning("⚠️ matplotlibNot available，Unable to draw")
             return
 
         if tags is None:
             tags = list(self.metrics_history.keys())
 
-        # 创建子图
+        # Create subgraph
         n_plots = len(tags)
         n_cols = min(3, n_plots)
         n_rows = (n_plots + n_cols - 1) // n_cols
@@ -283,7 +283,7 @@ class TrainingMonitor:
         else:
             axes = axes.flatten()
 
-        # 绘制每个指标
+        # Plot each indicator
         for i, tag in enumerate(tags):
             if tag not in self.metrics_history:
                 continue
@@ -296,19 +296,15 @@ class TrainingMonitor:
             axes[i].set_ylabel('Value')
             axes[i].grid(True, alpha=0.3)
 
-        # 隐藏多余的子图
+        # Hide redundant subplots
         for i in range(n_plots, len(axes)):
             axes[i].set_visible(False)
 
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
-            logger.info(f"✅ 图表已保存: {save_path}")
-        else:
-            save_path = self.experiment_dir / "metrics_plot.png"
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
-            logger.info(f"✅ 图表已保存: {save_path}")
+        plot_path = Path(save_path).expanduser() if save_path else self.experiment_dir / "metrics_plot.png"
+        plt.savefig(plot_path, dpi=150, bbox_inches='tight')
+        logger.info(f"✅ Chart saved: {plot_path}")
 
         plt.close()
 
@@ -316,16 +312,16 @@ class TrainingMonitor:
                           experiment_dirs: List[str],
                           metric_tags: List[str]) -> Dict[str, Any]:
         """
-        比较多个实验
+        Compare multiple experiments
 
         Args:
-            experiment_dirs: 实验目录列表
-            metric_tags: 要比较的指标标签
+            experiment_dirs: Experiment directory list
+            metric_tags: Metric labels to compare
 
         Returns:
-            比较结果
+            Compare results
         """
-        comparison = {
+        comparison: Dict[str, Any] = {
             "experiments": [],
             "metrics": {}
         }
@@ -333,10 +329,10 @@ class TrainingMonitor:
         for exp_dir in experiment_dirs:
             exp_path = Path(exp_dir)
             if not exp_path.exists():
-                logger.warning(f"⚠️ 实验目录不存在: {exp_dir}")
+                logger.warning(f"⚠️ Experiment directory does not exist: {exp_dir}")
                 continue
 
-            # 读取指标文件
+            # Read indicator file
             metrics_file = exp_path / "metrics_summary.json"
             if metrics_file.exists():
                 with open(metrics_file, 'r') as f:
@@ -346,7 +342,7 @@ class TrainingMonitor:
                         "metrics": metrics
                     })
 
-        # 计算每个指标的最佳实验
+        # Calculate the best experiment for each metric
         for tag in metric_tags:
             best_exp = None
             best_value = None
@@ -367,52 +363,52 @@ class TrainingMonitor:
         return comparison
 
     def close(self):
-        """关闭监控器"""
+        """Close monitor"""
         if self._closed:
             return
         self._safe_close_writer()
         self._closed = True
 
-        # 保存最终指标
+        # Save final indicator
         summary = self.get_metrics_summary()
         summary_file = self.experiment_dir / "metrics_summary.json"
         with open(summary_file, 'w') as f:
             json.dump(summary, f, indent=2)
 
-        logger.info(f"✅ 监控器已关闭，指标已保存")
+        logger.info("✅ Monitor is off，Indicator saved")
 
     def _safe_close_writer(self):
-        """安全关闭writer，避免线程异常"""
+        """Safe shutdownwriter，Avoid thread exceptions"""
         if self.tensorboard_enabled and self.writer:
             try:
                 self.writer.flush()
                 self.writer.close()
-                logger.info("✅ TensorBoard writer已关闭")
+                logger.info("✅ TensorBoard writerClosed")
             except Exception as e:
-                logger.warning(f"⚠️ 关闭TensorBoard writer失败: {e}")
+                logger.warning(f"⚠️ closureTensorBoard writerfail: {e}")
 
     def __del__(self):
-        """析构时尽量关闭writer，避免后台线程异常"""
+        """Try to close when destructingwriter，Avoid background thread exceptions"""
         try:
             self.close()
         except Exception:
-            # 避免析构过程中抛异常
+            # Avoid exceptions thrown during destruction
             pass
 
 
 class MetricsAnalyzer:
     """
-    指标分析器
+    Indicator Analyzer
 
-    分析训练指标并提供洞察
+    Analyze training metrics and provide insights
     """
 
     def __init__(self, metrics_history: Dict[str, List[Tuple[int, float]]]):
         """
-        初始化分析器
+        Initialize analyzer
 
         Args:
-            metrics_history: 指标历史
+            metrics_history: Indicator history
         """
         self.metrics = metrics_history
 
@@ -421,22 +417,22 @@ class MetricsAnalyzer:
                           window: int = 10,
                           threshold: float = 0.01) -> Tuple[bool, int]:
         """
-        检测指标是否收敛
+        Check whether the indicator converges
 
         Args:
-            metric_tag: 指标标签
-            window: 滑动窗口大小
-            threshold: 收敛阈值（方差）
+            metric_tag: Indicator label
+            window: sliding window size
+            threshold: convergence threshold（variance）
 
         Returns:
-            (是否收敛, 收敛步数)
+            (Convergence or not, Convergence steps)
         """
         if metric_tag not in self.metrics:
             return False, -1
 
         steps, values = zip(*self.metrics[metric_tag])
 
-        # 滑动窗口检测
+        # Sliding window detection
         for i in range(window, len(values)):
             window_values = values[i-window:i]
             variance = np.var(window_values)
@@ -451,22 +447,22 @@ class MetricsAnalyzer:
                       window: int = 20,
                       threshold: float = 0.001) -> Tuple[bool, int]:
         """
-        检测指标是否进入平台期
+        Detect whether the indicator has entered the plateau period
 
         Args:
-            metric_tag: 指标标签
-            window: 滑动窗口大小
-            threshold: 平台期阈值（平均变化率）
+            metric_tag: Indicator label
+            window: sliding window size
+            threshold: plateau threshold（average rate of change）
 
         Returns:
-            (是否平台期, 开始步数)
+            (Is it a plateau?, Start steps)
         """
         if metric_tag not in self.metrics:
             return False, -1
 
         steps, values = zip(*self.metrics[metric_tag])
 
-        # 计算变化率
+        # Calculate rate of change
         for i in range(window, len(values)):
             recent_values = values[i-window:i]
             avg_change = np.mean(np.diff(recent_values))
@@ -478,41 +474,41 @@ class MetricsAnalyzer:
 
     def analyze_learning_curve(self, metric_tag: str) -> Dict[str, Any]:
         """
-        分析学习曲线
+        Analyze the learning curve
 
         Args:
-            metric_tag: 指标标签
+            metric_tag: Indicator label
 
         Returns:
-            分析结果
+            Analyze results
         """
         if metric_tag not in self.metrics:
             return {}
 
         steps, values = zip(*self.metrics[metric_tag])
 
-        # 拟合学习曲线（指数饱和模型）
+        # Fit the learning curve（exponential saturation model）
         def model(x, a, b, c):
             return a * (1 - np.exp(-b * x)) + c
 
         try:
             from scipy.optimize import curve_fit
 
-            # 归一化步数
+            # Normalization steps
             x_normalized = np.array(steps) / max(steps)
             y = np.array(values)
 
-            # 初始参数猜测
+            # Initial parameter guessing
             p0 = [max(y) - min(y), 1.0, min(y)]
 
-            # 拟合
+            # fitting
             popt, _ = curve_fit(model, x_normalized, y, p0=p0, maxfev=5000)
 
-            # 计算拟合质量
+            # Calculate fit quality
             y_pred = model(x_normalized, *popt)
             r_squared = 1 - np.sum((y - y_pred)**2) / np.sum((y - np.mean(y))**2)
 
-            # 预测渐近值
+            # Predict asymptotic value
             asymptote = popt[0] + popt[2]
 
             return {
@@ -528,7 +524,7 @@ class MetricsAnalyzer:
             }
 
         except (ImportError, RuntimeError):
-            # scipy不可用或拟合失败，返回简单统计
+            # scipyNot available or fitting failed，Return simple statistics
             return {
                 "current_value": float(values[-1]),
                 "mean": float(np.mean(values)),
@@ -538,13 +534,13 @@ class MetricsAnalyzer:
 
 
 def main():
-    """测试监控器"""
+    """test monitor"""
     monitor = TrainingMonitor(experiment_name="test_monitor")
 
-    print(f"✅ 监控器已创建")
-    print(f"   TensorBoard: {'✅ 启用' if monitor.tensorboard_enabled else '❌ 禁用'}")
+    print("✅ Monitor created")
+    print(f"   TensorBoard: {'✅ enable' if monitor.tensorboard_enabled else '❌ Disable'}")
 
-    # 模拟训练过程
+    # Simulation training process
     for episode in range(100):
         reward = 0.5 + 0.3 * (1 - np.exp(-episode / 50)) + np.random.normal(0, 0.02)
         actor_loss = 0.5 * np.exp(-episode / 30) + np.random.normal(0, 0.01)
@@ -557,25 +553,25 @@ def main():
             critic_loss=critic_loss
         )
 
-    # 保存指标
+    # Save indicator
     monitor.save_metrics_to_json()
 
-    # 绘制曲线
+    # draw curve
     monitor.plot_metrics()
 
-    # 获取汇总
+    # Get summary
     summary = monitor.get_metrics_summary()
-    print(f"\n📊 训练汇总:")
-    print(f"   最终奖励: {summary['train/reward']['latest']:.4f}")
-    print(f"   奖励改善: {summary['train/reward']['improvement']:.4f}")
-    print(f"   最终Actor损失: {summary['train/actor_loss']['latest']:.4f}")
+    print("\n📊 Training summary:")
+    print(f"   final reward: {summary['train/reward']['latest']:.4f}")
+    print(f"   Reward improvements: {summary['train/reward']['improvement']:.4f}")
+    print(f"   finalActorloss: {summary['train/actor_loss']['latest']:.4f}")
 
-    # 分析学习曲线
+    # Analyze the learning curve
     analyzer = MetricsAnalyzer(monitor.metrics_history)
     curve_analysis = analyzer.analyze_learning_curve("train/reward")
-    print(f"\n📈 学习曲线分析:")
-    print(f"   收敛值预测: {curve_analysis.get('convergence_value', 0):.4f}")
-    print(f"   当前进度: {curve_analysis.get('progress_to_convergence', 0)*100:.1f}%")
+    print("\n📈 Learning curve analysis:")
+    print(f"   Convergence value prediction: {curve_analysis.get('convergence_value', 0):.4f}")
+    print(f"   Current progress: {curve_analysis.get('progress_to_convergence', 0)*100:.1f}%")
 
     monitor.close()
 

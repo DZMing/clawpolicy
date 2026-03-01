@@ -2,116 +2,123 @@
   {
     "id": 1,
     "category": "functional",
-    "description": "奖励系统 - 四维度奖励计算",
+    "description": "reward system - Four-dimensional reward calculation",
     "steps": [
-      "创建RewardSignal类",
-      "实现四维度奖励信号（客观指标、用户行为、显性反馈、行为模式）",
-      "实现动态权重调整",
-      "实现RewardCalculator计算引擎",
-      "编写单元测试"
+      "createRewardSignalkind",
+      "Realize four-dimensional reward signals（objective indicators、user behavior、explicit feedback、behavior pattern）",
+      "Implement dynamic weight adjustment",
+      "accomplishRewardCalculatorCompute engine",
+      "Write unit tests"
     ],
     "passes": true
   },
   {
     "id": 2,
     "category": "functional",
-    "description": "交互环境 - 状态/动作空间定义",
+    "description": "interactive environment - state/action space definition",
     "steps": [
-      "定义状态空间（task_type, tech_stack, user_mood等）",
-      "定义动作空间（agent_selection, automation_level等）",
-      "实现reset()方法",
-      "实现step()方法",
-      "编写单元测试"
+      "define state space（task_type, tech_stack, user_moodwait）",
+      "Define action space（agent_selection, automation_levelwait）",
+      "accomplishreset()method",
+      "accomplishstep()method",
+      "Write unit tests"
     ],
     "passes": true
   },
   {
     "id": 3,
     "category": "functional",
-    "description": "RL智能体 - Actor-Critic实现",
+    "description": "RLagent - Actor-Criticaccomplish",
     "steps": [
-      "实现PolicyNetwork（策略网络）",
-      "实现ValueNetwork（价值网络）",
-      "实现AlignmentAgent（Actor-Critic智能体）",
-      "实现select_action()方法",
-      "实现update_policy()方法",
-      "编写单元测试"
+      "accomplishPolicyNetwork（policy network）",
+      "accomplishValueNetwork（value network）",
+      "accomplishAlignmentAgent（Actor-Criticagent）",
+      "accomplishselect_action()method",
+      "accomplishupdate_policy()method",
+      "Write unit tests"
     ],
     "passes": true
   },
   {
     "id": 4,
     "category": "functional",
-    "description": "学习器重构 - 从统计学习转向RL",
+    "description": "Learner reconstruction - Moving from statistical learningRL",
     "steps": [
-      "创建RLLearner类",
-      "实现learn_from_task()在线学习",
-      "实现save_model()保存模型",
-      "保持与PreferenceLearner向后兼容",
-      "编写单元测试"
+      "createRLLearnerkind",
+      "accomplishlearn_from_task()online learning",
+      "accomplishsave_model()Save model",
+      "keep withPreferenceLearnerbackwards compatible",
+      "Write unit tests"
     ],
     "passes": true
   },
   {
     "id": 5,
     "category": "functional",
-    "description": "集成引擎扩展 - 新接口",
+    "description": "Integrated engine extension - new interface",
     "steps": [
-      "实现on_task_start()接口",
-      "实现on_task_complete()接口",
-      "集成RLLearner",
-      "编写集成测试"
+      "accomplishon_task_start()interface",
+      "accomplishon_task_complete()interface",
+      "integratedRLLearner",
+      "Write integration tests"
     ],
     "passes": true
   },
   {
     "id": 6,
     "category": "optimization",
-    "description": "神经网络模型 - 可选PyTorch实现",
+    "description": "neural network model - OptionalPyTorchaccomplish",
     "steps": [
-      "检测PyTorch可用性",
-      "实现PyTorch版本的策略网络",
-      "实现PyTorch版本的价值网络",
-      "实现智能降级（无PyTorch时用NumPy）"
+      "DetectionPyTorchAvailability",
+      "accomplishPyTorchversion policy network",
+      "accomplishPyTorchversion value network",
+      "Implement intelligent downgrade（nonePyTorchUsed whenNumPy）"
     ],
     "passes": true
   },
   {
     "id": 7,
     "category": "optimization",
-    "description": "经验回放 - 提升样本效率",
+    "description": "Experience replay - Improve sample efficiency",
     "steps": [
-      "创建ExperienceReplay类",
-      "实现经验存储",
-      "实现优先级采样",
-      "实现批量采样"
+      "createExperienceReplaykind",
+      "Implement experience storage",
+      "Implement priority sampling",
+      "Implement batch sampling"
     ],
     "passes": true
   },
   {
     "id": 8,
     "category": "optimization",
-    "description": "训练器 - 完整训练循环",
+    "description": "trainer - Complete training cycle",
     "steps": [
-      "创建RLTrainer类",
-      "实现多episode训练循环",
-      "实现检查点保存/加载",
-      "实现训练统计和可视化"
+      "createRLTrainerkind",
+      "Achieve moreepisodetraining loop",
+      "Implement checkpoint saving/load",
+      "Implement training statistics and visualization"
     ],
     "passes": true
   },
   {
     "id": 9,
     "category": "advanced",
-    "description": "分布式训练支持",
-    "steps": ["集成Redis + Celery", "实现多项目并行训练"],
+    "description": "Distributed training support",
+    "steps": [
+      "integratedRedis + Celery",
+      "Implement multi-project parallel training"
+    ],
     "passes": false
   },
   {
     "id": 10,
     "category": "advanced",
-    "description": "监控面板 - TensorBoard集成",
-    "steps": ["集成TensorBoard", "实现奖励曲线可视化", "实现训练进度监控"],
+    "description": "Monitoring panel - TensorBoardintegrated",
+    "steps": [
+      "integratedTensorBoard",
+      "Visualize the reward curve",
+      "Implement training progress monitoring"
+    ],
     "passes": false
   }
 ]

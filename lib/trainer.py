@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 """
-强化学习训练器 - 完整训练循环
+reinforcement learning trainer - Complete training cycle
 
-实现完整的训练流程：
-- 多episode训练
-- 检查点保存/加载
-- 训练统计和可视化
+Implement a complete training process：
+- manyepisodetrain
+- checkpoint save/load
+- Training statistics and visualization
 """
 
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
 import json
-from datetime import datetime
 
 from .agent import AlignmentAgent, Trajectory
 from .environment import InteractionEnvironment
@@ -21,134 +20,134 @@ from .experience_replay import ExperienceReplay, Experience
 
 class RLTrainer:
     """
-    强化学习训练器
+    reinforcement learning trainer
 
-    功能：
-    - 完整训练循环（多个episode）
-    - 检查点保存/加载
-    - 训练统计和可视化
+    Function：
+    - Complete training cycle（Multipleepisode）
+    - checkpoint save/load
+    - Training statistics and visualization
     """
 
-    def __init__(self, model_dir: str = None,
+    def __init__(self, model_dir: str | Path | None = None,
                  use_experience_replay: bool = True,
                  replay_capacity: int = 10000):
         """
-        初始化训练器
+        Initialize the trainer
 
         Args:
-            model_dir: 模型保存目录
-            use_experience_replay: 是否使用经验回放
-            replay_capacity: 经验回放容量
+            model_dir: Model save directory
+            use_experience_replay: Whether to use experience playback
+            replay_capacity: Experience playback capacity
         """
         self.model_dir = Path(model_dir).expanduser() if model_dir else Path("./models/rl")
         self.model_dir.mkdir(parents=True, exist_ok=True)
 
-        # 初始化环境
+        # Initialize environment
         self.env = InteractionEnvironment()
 
-        # 初始化智能体
+        # Initialize the agent
         self.agent = AlignmentAgent(
             state_dim=self.env.get_state_space_size(),
             action_dim=self.env.get_action_space_size()
         )
 
-        # 初始化经验回放
+        # Initialize experience playback
         self.use_experience_replay = use_experience_replay
         self.replay_buffer = ExperienceReplay(capacity=replay_capacity) if use_experience_replay else None
 
-        # 训练统计
+        # training statistics
         self.episode_rewards: List[float] = []
         self.episode_lengths: List[int] = []
         self.training_losses: List[Dict[str, float]] = []
 
-        # 当前episode
+        # currentepisode
         self.current_episode = 0
 
     def train(self, num_episodes: int = 100,
               max_steps_per_episode: int = 100,
               save_interval: int = 10) -> Dict[str, Any]:
         """
-        训练智能体
+        Train the agent
 
         Args:
-            num_episodes: 训练episode数量
-            max_steps_per_episode: 每个episode最大步数
-            save_interval: 保存间隔
+            num_episodes: trainepisodequantity
+            max_steps_per_episode: eachepisodeMaximum number of steps
+            save_interval: save interval
 
         Returns:
-            训练统计
+            training statistics
         """
-        print(f"🚀 开始训练（{num_episodes} episodes）...")
+        print(f"🚀 Start training（{num_episodes} episodes）...")
 
         for episode in range(num_episodes):
             self.current_episode = episode + 1
 
-            # 运行一个episode
+            # run aepisode
             episode_reward, episode_length, episode_loss = self._run_episode(max_steps_per_episode)
 
-            # 记录统计
+            # Record statistics
             self.episode_rewards.append(episode_reward)
             self.episode_lengths.append(episode_length)
             self.training_losses.append(episode_loss)
 
-            # 打印进度
+            # Printing progress
             if episode % 10 == 0 or episode == num_episodes - 1:
                 avg_reward = np.mean(self.episode_rewards[-10:])
                 print(f"Episode {episode + 1}/{num_episodes} | "
-                      f"奖励: {episode_reward:.3f} | "
-                      f"平均: {avg_reward:.3f} | "
-                      f"步数: {episode_length}")
+                      f"award: {episode_reward:.3f} | "
+                      f"average: {avg_reward:.3f} | "
+                      f"number of steps: {episode_length}")
 
-            # 定期保存
+            # Save regularly
             if episode % save_interval == 0 and episode > 0:
                 self.save_checkpoint(f"checkpoint_episode_{episode}")
 
-        print(f"✅ 训练完成！")
+        print("✅ Training completed！")
 
-        # 保存最终模型
+        # Save final model
         self.save_checkpoint("final")
 
         return self.get_training_stats()
 
     def _run_episode(self, max_steps: int) -> Tuple[float, int, Dict[str, float]]:
         """
-        运行一个episode
+        run aepisode
 
         Args:
-            max_steps: 最大步数
+            max_steps: Maximum number of steps
 
         Returns:
-            (总奖励, 步数, 损失统计)
+            (total reward, number of steps, Loss statistics)
         """
-        # 随机任务上下文
+        # Random task context
         task_context = self._generate_random_task_context()
 
-        # 重置环境
+        # Reset environment
         state = self.env.reset(task_context)
 
         trajectory = Trajectory([], [], [], [], [])
         total_reward = 0.0
 
         for step in range(max_steps):
-            # 选择动作
+            # Select action
             action = self.agent.select_action(state, explore=True)
 
-            # 模拟任务结果
+            # Simulation task results
             task_result = self._simulate_task_result()
 
-            # 执行步骤
+            # Execution steps
             next_state, reward, done, info = self.env.step(action, task_result)
 
             action_indices = self.agent.encode_action_indices(action)
 
-            # 记录轨迹
+            # record track
             trajectory.states.append(state.to_vector())
             trajectory.actions.append(action_indices)
             trajectory.rewards.append(reward)
             trajectory.dones.append(done)
             trajectory.next_states.append(next_state.to_vector())
 
-            # 添加到经验回放
+            # Add to experience replay
             if self.replay_buffer:
                 exp = Experience(
                     state=state.to_vector(),
@@ -166,13 +165,13 @@ class RLTrainer:
             if done:
                 break
 
-        # 更新策略
+        # update strategy
         loss_stats = self.agent.update_policy(trajectory)
 
-        # 如果使用经验回放且有足够经验，进行额外的训练更新
+        # If you use experience replay and have enough experience，Make additional training updates
         if self.replay_buffer and self.replay_buffer.is_ready(min_size=32):
             additional_loss = self._train_from_replay()
-            # 合并损失统计
+            # Combined loss statistics
             if additional_loss:
                 for key, value in additional_loss.items():
                     loss_stats[key] = loss_stats.get(key, 0) + value
@@ -181,13 +180,13 @@ class RLTrainer:
 
     def _train_from_replay(self, num_updates: int = 4) -> Optional[Dict[str, float]]:
         """
-        从经验回放中训练
+        Train from experience replays
 
         Args:
-            num_updates: 更新次数
+            num_updates: Update times
 
         Returns:
-            损失统计
+            Loss statistics
         """
         if not self.replay_buffer:
             return None
@@ -201,7 +200,7 @@ class RLTrainer:
             if len(states) == 0:
                 continue
 
-            # 使用经验回放数据更新策略
+            # Using Experience Replay Data Update Strategies
             for i in range(len(states)):
                 state = states[i]
                 action_indices = actions[i]
@@ -209,17 +208,17 @@ class RLTrainer:
                 next_state = next_states[i]
                 done = dones[i]
 
-                # 计算目标价值
+                # Calculate target value
                 if done:
                     target_value = reward
                 else:
                     target_value = reward + self.agent.gamma * self.agent.value_net.forward(next_state)
 
-                # 计算优势
+                # Computational Advantage
                 current_value = self.agent.value_net.forward(state)
                 advantage = target_value - current_value
 
-                # 更新Actor和Critic
+                # renewActorandCritic
                 actor_loss = self.agent.policy_net.update(state, action_indices, advantage)
                 critic_loss = self.agent.value_net.update(state, target_value)
 
@@ -232,12 +231,12 @@ class RLTrainer:
         }
 
     def _generate_random_task_context(self) -> Dict[str, Any]:
-        """生成随机任务上下文"""
+        """Generate random task context"""
         task_types = ["T1", "T2", "T3", "T4"]
         tech_stacks = [["python"], ["javascript"], ["python", "fastapi"], ["react", "typescript"]]
         moods = ["focused", "relaxed", "stressed"]
 
-        # 使用Python的random.choice而不是numpy
+        # usePythonofrandom.choiceinstead ofnumpy
         import random
         return {
             "task_type": random.choice(task_types),
@@ -247,8 +246,8 @@ class RLTrainer:
         }
 
     def _simulate_task_result(self) -> Dict[str, Any]:
-        """模拟任务结果"""
-        # 随机生成结果
+        """Simulation task results"""
+        # Randomly generate results
         coverage = np.random.uniform(50, 100)
         passed = int(np.random.uniform(5, 15))
         failed = int(np.random.uniform(0, 3))
@@ -274,43 +273,43 @@ class RLTrainer:
 
     def save_checkpoint(self, name: str) -> None:
         """
-        保存检查点
+        Save checkpoint
 
         Args:
-            name: 检查点名称
+            name: Checkpoint name
         """
         checkpoint_dir = self.model_dir / name
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-        # 保存智能体
+        # Save agent
         self.agent.save_model(str(checkpoint_dir))
 
-        # 保存统计
+        # save statistics
         stats = {
             "episode": self.current_episode,
             "episode_rewards": self.episode_rewards,
             "episode_lengths": self.episode_lengths,
-            "training_losses": self.training_losses[-100:]  # 最近100个
+            "training_losses": self.training_losses[-100:]  # recent100indivual
         }
 
         with open(checkpoint_dir / "training_stats.json", 'w') as f:
             json.dump(stats, f, indent=2)
 
-        print(f"✅ 检查点已保存: {checkpoint_dir}")
+        print(f"✅ Checkpoint saved: {checkpoint_dir}")
 
     def load_checkpoint(self, name: str) -> None:
         """
-        加载检查点
+        Load checkpoint
 
         Args:
-            name: 检查点名称
+            name: Checkpoint name
         """
         checkpoint_dir = self.model_dir / name
 
-        # 加载智能体
+        # Load the agent
         self.agent.load_model(str(checkpoint_dir))
 
-        # 加载统计
+        # Load statistics
         stats_path = checkpoint_dir / "training_stats.json"
         if stats_path.exists():
             with open(stats_path, 'r') as f:
@@ -321,10 +320,10 @@ class RLTrainer:
             self.episode_lengths = stats["episode_lengths"]
             self.training_losses = stats["training_losses"]
 
-        print(f"✅ 检查点已加载: {checkpoint_dir}")
+        print(f"✅ Checkpoint loaded: {checkpoint_dir}")
 
     def get_training_stats(self) -> Dict[str, Any]:
-        """获取训练统计"""
+        """Get training statistics"""
         if not self.episode_rewards:
             return {}
 
@@ -341,15 +340,15 @@ class RLTrainer:
 
 
 def main():
-    """测试训练器"""
+    """Test trainer"""
     trainer = RLTrainer(model_dir="/tmp/rl_trainer_test", use_experience_replay=True)
 
-    print(f"✅ 训练器已创建")
+    print("✅ Trainer has been created")
 
-    # 训练几个episode
+    # train a fewepisode
     stats = trainer.train(num_episodes=5, max_steps_per_episode=10, save_interval=2)
 
-    print(f"\n📊 训练统计:")
+    print("\n📊 training statistics:")
     for key, value in stats.items():
         print(f"  {key}: {value}")
 

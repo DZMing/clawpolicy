@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "openclaw-alignment"
 version = "1.0.0"
 description = "Reinforcement-learning driven alignment engine for OpenClaw workflows"
-readme = "README_EN.md"
+readme = "README.md"
 license = "MIT"
 authors = [
   { name = "OpenClaw Alignment Contributors" }
@@ -54,9 +54,9 @@ dev = [
 ]
 
 [project.scripts]
-# 主 CLI 命令（新）
+# host CLI Order（new）
 openclaw-align = "lib.cli:main"
-# 兼容旧命令
+# Compatible with old commands
 openclaw-alignment = "lib.integration:main"
 
 [tool.setuptools]

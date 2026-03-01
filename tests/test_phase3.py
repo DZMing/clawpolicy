@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 """
-Phase 3高级功能测试
+Phase 3Advanced functional testing
 
-测试分布式训练、自动调参、监控面板和性能优化
+Test distributed training、Automatic parameter adjustment、Monitoring panels and performance optimization
 """
 
 import pytest
 import numpy as np
 from pathlib import Path
 import tempfile
-import shutil
 
 
 class TestDistributedTrainer:
-    """分布式训练器测试"""
+    """Distributed trainer testing"""
 
     def test_initialization(self):
-        """测试初始化"""
+        """Test initialization"""
         from lib.distributed_trainer import DistributedTrainer, DistributedTrainingConfig
 
         config = DistributedTrainingConfig()
@@ -26,20 +25,20 @@ class TestDistributedTrainer:
         assert trainer.config is not None
 
     def test_fallback_mode(self):
-        """测试降级模式"""
+        """Test downgrade mode"""
         from lib.distributed_trainer import DistributedTrainer, DistributedTrainingConfig
 
         config = DistributedTrainingConfig()
         trainer = DistributedTrainer(config)
 
-        # 分布式功能应该检测到依赖
+        # Distributed functions should detect dependencies
         assert hasattr(trainer, 'distributed_enabled')
 
-        # 应该有本地训练器作为降级
+        # There should be local trainer as downgrade
         assert hasattr(trainer, 'local_trainer') or trainer.distributed_enabled
 
     def test_train_sequential(self):
-        """测试顺序训练（降级模式）"""
+        """Test order training（downgrade mode）"""
         from lib.distributed_trainer import DistributedTrainer, DistributedTrainingConfig
 
         config = DistributedTrainingConfig()
@@ -49,7 +48,7 @@ class TestDistributedTrainer:
             {"project_id": "test_proj_1", "task_types": ["T1"]},
         ]
 
-        # 训练1个episode
+        # train1indivualepisode
         results = trainer.train_distributed(
             project_configs=project_configs,
             num_episodes_per_project=1,
@@ -61,7 +60,7 @@ class TestDistributedTrainer:
         assert results["total_projects"] == 1
 
     def test_fallback_when_runtime_unreachable(self):
-        """测试依赖存在但分布式运行时不可达时自动降级"""
+        """Automatically downgrade when test dependencies exist but the distributed runtime is unreachable"""
         from lib.distributed_trainer import (
             DistributedTrainer,
             DistributedTrainingConfig,
@@ -83,10 +82,10 @@ class TestDistributedTrainer:
 
 
 class TestHyperparameterTuner:
-    """超参数调优器测试"""
+    """Hyperparameter tuner testing"""
 
     def test_scheduler_creation(self):
-        """测试调度器创建"""
+        """Test scheduler creation"""
         from lib.hyperparameter_tuner import LearningRateScheduler
 
         scheduler = LearningRateScheduler(
@@ -98,7 +97,7 @@ class TestHyperparameterTuner:
         assert scheduler.initial_lr == 0.001
 
     def test_lr_schedule(self):
-        """测试学习率调度"""
+        """Test learning rate scheduling"""
         from lib.hyperparameter_tuner import LearningRateScheduler
 
         scheduler = LearningRateScheduler(
@@ -108,15 +107,15 @@ class TestHyperparameterTuner:
             decay_steps=100
         )
 
-        # 测试前10步的学习率
+        # Before test10step learning rate
         lrs = [scheduler.get_lr(i) for i in range(10)]
 
-        # 学习率应该逐渐下降
-        assert lrs[0] == 0.001  # 初始学习率
-        assert lrs[-1] < lrs[0]  # 应该下降
+        # The learning rate should gradually decrease
+        assert lrs[0] == 0.001  # Initial learning rate
+        assert lrs[-1] < lrs[0]  # should drop
 
     def test_cosine_schedule(self):
-        """测试余弦退火调度"""
+        """Test cosine annealing schedule"""
         from lib.hyperparameter_tuner import LearningRateScheduler
 
         scheduler = LearningRateScheduler(
@@ -130,7 +129,7 @@ class TestHyperparameterTuner:
         assert lr <= 0.001
 
     def test_hyperparameter_search(self):
-        """测试超参数搜索"""
+        """Test hyperparameter search"""
         from lib.hyperparameter_tuner import HyperparameterSearch
 
         search_space = {
@@ -140,7 +139,7 @@ class TestHyperparameterTuner:
 
         search = HyperparameterSearch(search_space, search_type="random", n_trials=5)
 
-        # 测试建议配置
+        # Test recommended configuration
         config1 = search.suggest(0)
         config2 = search.suggest(1)
 
@@ -149,11 +148,11 @@ class TestHyperparameterTuner:
         assert "learning_rate" in config1
         assert "batch_size" in config1
 
-        # 两个配置应该不同（随机）
+        # The two configurations should be different（random）
         assert config1 != config2
 
     def test_record_trial(self):
-        """测试记录试验"""
+        """test record test"""
         from lib.hyperparameter_tuner import HyperparameterSearch
 
         search_space = {
@@ -162,7 +161,7 @@ class TestHyperparameterTuner:
 
         search = HyperparameterSearch(search_space, n_trials=5)
 
-        # 记录试验
+        # record test
         config = search.suggest(0)
         search.record_trial(config, score=0.85)
 
@@ -171,27 +170,27 @@ class TestHyperparameterTuner:
         assert search.best_trial["score"] == 0.85
 
     def test_early_stopping(self):
-        """测试早停机制"""
+        """Test early stopping mechanism"""
         from lib.hyperparameter_tuner import EarlyStopping
 
         early_stop = EarlyStopping(patience=3, min_delta=0.01)
 
-        # 前几次评分改善
+        # Ratings improved in previous times
         assert not early_stop.check(0.5)
         assert not early_stop.check(0.55)
         assert not early_stop.check(0.60)
 
-        # 后续评分不再改善
+        # Subsequent ratings no longer improve
         assert not early_stop.check(0.60)  # counter=1
         assert not early_stop.check(0.60)  # counter=2
-        assert early_stop.check(0.60)  # counter=3 -> 早停
+        assert early_stop.check(0.60)  # counter=3 -> Stop early
 
 
 class TestMonitoring:
-    """监控面板测试"""
+    """Monitoring panel testing"""
 
     def test_monitor_creation(self):
-        """测试监控器创建"""
+        """Test monitor creation"""
         from lib.monitoring import TrainingMonitor
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -202,7 +201,7 @@ class TestMonitoring:
             monitor.close()
 
     def test_log_scalar(self):
-        """测试记录标量"""
+        """test record scalar"""
         from lib.monitoring import TrainingMonitor
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -216,7 +215,7 @@ class TestMonitoring:
             monitor.close()
 
     def test_log_training_step(self):
-        """测试记录训练步骤"""
+        """Test record training steps"""
         from lib.monitoring import TrainingMonitor
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -234,13 +233,13 @@ class TestMonitoring:
             monitor.close()
 
     def test_metrics_summary(self):
-        """测试指标汇总"""
+        """Summary of test indicators"""
         from lib.monitoring import TrainingMonitor
 
         with tempfile.TemporaryDirectory() as tmpdir:
             monitor = TrainingMonitor(log_dir=tmpdir)
 
-            # 记录一些指标
+            # Record some indicators
             for i in range(10):
                 monitor.log_scalar("test/value", i * 0.1, step=i)
 
@@ -252,7 +251,7 @@ class TestMonitoring:
             monitor.close()
 
     def test_save_metrics(self):
-        """测试保存指标"""
+        """Test save metrics"""
         from lib.monitoring import TrainingMonitor
         import json
 
@@ -265,7 +264,7 @@ class TestMonitoring:
 
             assert Path(filepath).exists()
 
-            # 验证内容
+            # Verify content
             with open(filepath, 'r') as f:
                 data = json.load(f)
 
@@ -274,36 +273,36 @@ class TestMonitoring:
 
 
 class TestPerformanceOptimizer:
-    """性能优化器测试"""
+    """Performance Optimizer Test"""
 
     def test_quantization(self):
-        """测试模型量化"""
+        """Test model quantification"""
         from lib.performance_optimizer import ModelQuantization
 
         quantizer = ModelQuantization()
 
-        # 创建测试权重
+        # Create test weights
         weights = np.random.randn(128, 64).astype(np.float32)
 
-        # 量化
+        # Quantify
         quantized, params = quantizer.quantize_weights(weights, bits=8)
 
         assert quantized.dtype == np.int8
         assert "scale" in params
         assert "zero_point" in params
 
-        # 反量化
+        # inverse quantization
         dequantized = quantizer.dequantize_weights(quantized, params)
 
-        # 验证误差较小
+        # The verification error is small
         error = np.mean(np.abs(weights - dequantized))
-        assert error < 0.1  # 误差应该小于0.1
+        assert error < 0.1  # The error should be less than0.1
 
     def test_inference_cache(self):
-        """测试推理缓存"""
+        """Testing the inference cache"""
         from lib.performance_optimizer import InferenceCache
 
-        # 创建模拟模型
+        # Create a simulation model
         class DummyModel:
             def forward(self, state):
                 return float(np.sum(state))
@@ -311,25 +310,25 @@ class TestPerformanceOptimizer:
         model = DummyModel()
         cache = InferenceCache(model, cache_size=100)
 
-        # 第一次调用（缓存未命中）
+        # first call（cache miss）
         state = np.array([1.0, 2.0, 3.0])
         result1 = cache.predict(state)
 
-        # 第二次调用相同状态（缓存命中）
+        # Second call to the same state（cache hit）
         result2 = cache.predict(state)
 
         assert result1 == result2
 
-        # 检查缓存统计（使用LRU缓存的cache_info）
+        # Check cache statistics（useLRUCachedcache_info）
         stats = cache.get_cache_stats()
-        # 第一次调用：miss（建立缓存），第二次调用：hit
-        # 但由于第一次在建立缓存时也算miss，所以应该是1 miss, 1 hit
-        assert stats["cache_misses"] >= 1  # 至少一次miss
-        assert stats["cache_hits"] >= 1  # 至少一次hit
+        # first call：miss（Create cache），second call：hit
+        # But since it is also counted when creating the cache for the first timemiss，So it should be1 miss, 1 hit
+        assert stats["cache_misses"] >= 1  # at least oncemiss
+        assert stats["cache_hits"] >= 1  # at least oncehit
         assert stats["total_requests"] == 2
 
     def test_cache_stats(self):
-        """测试缓存统计"""
+        """Test cache statistics"""
         from lib.performance_optimizer import InferenceCache
 
         class DummyModel:
@@ -339,7 +338,7 @@ class TestPerformanceOptimizer:
         model = DummyModel()
         cache = InferenceCache(model, cache_size=100)
 
-        # 多次预测
+        # multiple predictions
         state = np.array([1.0, 2.0, 3.0])
         for _ in range(5):
             cache.predict(state)
@@ -347,10 +346,10 @@ class TestPerformanceOptimizer:
         stats = cache.get_cache_stats()
 
         assert stats["total_requests"] == 5
-        assert stats["hit_rate"] > 0  # 应该有缓存命中
+        assert stats["hit_rate"] > 0  # There should be a cache hit
 
     def test_batch_inference(self):
-        """测试批量推理"""
+        """Test batch inference"""
         from lib.performance_optimizer import BatchInference
 
         class DummyModel:
@@ -360,63 +359,63 @@ class TestPerformanceOptimizer:
         model = DummyModel()
         batch_infer = BatchInference(model, batch_size=5)
 
-        # 添加2个请求（小于batch_size）
+        # Add to2requests（less thanbatch_size）
         for _ in range(2):
             state = np.random.randn(10)
             request_id = batch_infer.predict(state, sync=False)
             assert isinstance(request_id, int)
 
-        # 队列应该有2个请求
+        # The queue should have2requests
         assert batch_infer.get_queue_size() == 2
 
-        # 刷新批量
+        # Refresh batch
         results = batch_infer.flush()
         assert len(results) == 2
         assert all(isinstance(item, tuple) and len(item) == 2 for item in results)
 
-        # 队列应该为空
+        # Queue should be empty
         assert batch_infer.get_queue_size() == 0
 
-        # 测试自动批量触发
+        # Test automatic batch triggering
         for _ in range(5):
             state = np.random.randn(10)
             batch_infer.predict(state, sync=False)
 
-        # 队列应该为空（自动触发批量推理后清空）
+        # Queue should be empty（Automatically trigger batch inference and clear it after）
         assert batch_infer.get_queue_size() == 0
 
 
 class TestIntegration:
-    """集成测试"""
+    """Integration testing"""
 
     def test_phase3_integration(self):
-        """测试Phase 3集成"""
+        """testPhase 3integrated"""
         from lib.distributed_trainer import DistributedTrainer
         from lib.hyperparameter_tuner import HyperparameterTuner
         from lib.monitoring import TrainingMonitor
         from lib.performance_optimizer import PerformanceOptimizer
 
-        # 所有模块应该可以导入
+        # All modules should be importable
         assert DistributedTrainer is not None
         assert HyperparameterTuner is not None
         assert TrainingMonitor is not None
         assert PerformanceOptimizer is not None
 
     def test_full_pipeline(self):
-        """测试完整流程"""
+        """Test the complete process"""
         from lib.monitoring import TrainingMonitor
         from lib.hyperparameter_tuner import LearningRateScheduler
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # 创建监控器
+            # Create monitor
             monitor = TrainingMonitor(log_dir=tmpdir, experiment_name="full_pipeline")
 
-            # 创建学习率调度器
+            # Create a learning rate scheduler
             scheduler = LearningRateScheduler(initial_lr=0.001, scheduler_type="exponential")
 
-            # 模拟训练循环
+            # Simulation training loop
             for episode in range(10):
-                lr = scheduler.get_lr()
+                scheduler.get_lr()
                 reward = 0.5 + 0.1 * (episode / 10)
 
                 monitor.log_training_step(
@@ -426,7 +425,7 @@ class TestIntegration:
                     critic_loss=0.05 / (episode + 1)
                 )
 
-            # 验证记录
+            # Verify records
             summary = monitor.get_metrics_summary()
             assert "train/reward" in summary
             assert summary["train/reward"]["count"] == 10

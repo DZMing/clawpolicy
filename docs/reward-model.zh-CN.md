@@ -1,10 +1,7 @@
-# 奖励模型
+# Reward Model (Legacy zh-CN Path)
 
-奖励引擎由四个维度组成：
+This file path is kept for backward compatibility.
 
-1. 客观指标（覆盖率、质量、Bug 数、耗时）
-2. 用户行为信号（接受率、采用率、重写率）
-3. 显性反馈（评分、反馈次数）
-4. 行为模式（Agent/工作流偏好）
+Use the primary English document:
 
-权重会归一化，并可根据学习阶段和负向反馈动态调整。
+- docs/reward-model.md

@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-自动调参系统 - 学习率调度与超参数搜索
+Automatic parameter adjustment system - Learning rate scheduling and hyperparameter search
 
-实现智能超参数优化：
-- 学习率调度（指数衰减、余弦退火）
-- 超参数搜索（网格搜索、随机搜索、贝叶斯优化）
-- 早停机制（Early Stopping）
-- 超参数重要性分析
+Implement intelligent hyperparameter optimization：
+- Learning rate scheduling（exponential decay、cosine annealing）
+- Hyperparameter search（grid search、random search、Bayesian optimization）
+- Early stopping mechanism（Early Stopping）
+- Hyperparameter importance analysis
 
-Phase 3.2 - 预计250行
+Phase 3.2 - expected250OK
 """
 
 import numpy as np
-from typing import Dict, List, Any, Optional, Tuple, Callable
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from pathlib import Path
 import json
 from datetime import datetime
@@ -24,13 +24,13 @@ logger = logging.getLogger(__name__)
 
 class LearningRateScheduler:
     """
-    学习率调度器
+    Learning rate scheduler
 
-    支持多种调度策略：
-    - constant: 常数学习率
-    - exponential: 指数衰减
-    - cosine: 余弦退火
-    - step: 阶梯衰减
+    Support multiple scheduling strategies：
+    - constant: constant learning rate
+    - exponential: exponential decay
+    - cosine: cosine annealing
+    - step: step decay
     """
 
     def __init__(self,
@@ -40,14 +40,14 @@ class LearningRateScheduler:
                  decay_steps: int = 100,
                  min_lr: float = 1e-6):
         """
-        初始化学习率调度器
+        Initialize the learning rate scheduler
 
         Args:
-            initial_lr: 初始学习率
-            scheduler_type: 调度器类型（constant/exponential/cosine/step）
-            decay_rate: 衰减率
-            decay_steps: 衰减步数
-            min_lr: 最小学习率
+            initial_lr: Initial learning rate
+            scheduler_type: scheduler type（constant/exponential/cosine/step）
+            decay_rate: decay rate
+            decay_steps: Decay steps
+            min_lr: minimum learning rate
         """
         self.initial_lr = initial_lr
         self.scheduler_type = scheduler_type
@@ -58,15 +58,15 @@ class LearningRateScheduler:
         self.current_step = 0
         self.history: List[Tuple[int, float]] = []
 
-    def get_lr(self, step: int = None) -> float:
+    def get_lr(self, step: int | None = None) -> float:
         """
-        获取当前学习率
+        Get the current learning rate
 
         Args:
-            step: 步数（None则使用内部计数）
+            step: number of steps（Nonethen use the internal count）
 
         Returns:
-            当前学习率
+            Current learning rate
         """
         if step is None:
             step = self.current_step
@@ -87,28 +87,28 @@ class LearningRateScheduler:
             lr = self.initial_lr * (self.decay_rate ** (step // self.decay_steps))
 
         else:
-            raise ValueError(f"未知的调度器类型: {self.scheduler_type}")
+            raise ValueError(f"Unknown scheduler type: {self.scheduler_type}")
 
-        # 确保不低于最小学习率
+        # Make sure not to go below the minimum learning rate
         lr = max(lr, self.min_lr)
 
         self.history.append((step, lr))
         return lr
 
     def reset(self):
-        """重置调度器"""
+        """reset scheduler"""
         self.current_step = 0
         self.history = []
 
 
 class HyperparameterSearch:
     """
-    超参数搜索
+    Hyperparameter search
 
-    支持多种搜索策略：
-    - grid: 网格搜索（穷举）
-    - random: 随机搜索
-    - bayesian: 贝叶斯优化（简化版）
+    Supports multiple search strategies：
+    - grid: grid search（exhaustive）
+    - random: random search
+    - bayesian: Bayesian optimization（Simplified version）
     """
 
     def __init__(self,
@@ -116,17 +116,17 @@ class HyperparameterSearch:
                  search_type: str = "random",
                  n_trials: int = 50):
         """
-        初始化超参数搜索
+        Initialize hyperparameter search
 
         Args:
-            search_space: 搜索空间
+            search_space: search space
                 {
-                    "learning_rate": (0.0001, 0.01),  # 连续范围
-                    "batch_size": [32, 64, 128],       # 离散选择
+                    "learning_rate": (0.0001, 0.01),  # continuous range
+                    "batch_size": [32, 64, 128],       # discrete choice
                     "hidden_dims": [[64, 64], [128, 128]]
                 }
-            search_type: 搜索类型（grid/random/bayesian）
-            n_trials: 试验次数
+            search_type: Search type（grid/random/bayesian）
+            n_trials: number of trials
         """
         self.search_space = search_space
         self.search_type = search_type
@@ -137,13 +137,13 @@ class HyperparameterSearch:
 
     def suggest(self, trial_id: int) -> Dict[str, Any]:
         """
-        建议下一组超参数
+        Suggest next set of hyperparameters
 
         Args:
-            trial_id: 试验ID
+            trial_id: testID
 
         Returns:
-            超参数配置
+            Hyperparameter configuration
         """
         if self.search_type == "grid":
             return self._grid_suggest(trial_id)
@@ -152,33 +152,33 @@ class HyperparameterSearch:
         elif self.search_type == "bayesian":
             return self._bayesian_suggest(trial_id)
         else:
-            raise ValueError(f"未知的搜索类型: {self.search_type}")
+            raise ValueError(f"Unknown search type: {self.search_type}")
 
     def _grid_suggest(self, trial_id: int) -> Dict[str, Any]:
-        """网格搜索"""
-        # 生成所有可能的组合（简化版）
+        """grid search"""
+        # Generate all possible combinations（Simplified version）
         all_configs = self._generate_grid_configs()
 
         if trial_id >= len(all_configs):
-            logger.warning(f"试验ID {trial_id} 超出网格搜索范围，使用随机配置")
+            logger.warning(f"testID {trial_id} Grid search range exceeded，Use random configuration")
             return self._random_suggest(trial_id)
 
         return all_configs[trial_id]
 
     def _random_suggest(self, trial_id: int) -> Dict[str, Any]:
-        """随机搜索"""
+        """random search"""
         config = {}
 
         for param_name, param_space in self.search_space.items():
             if isinstance(param_space, tuple):
-                # 连续范围
+                # continuous range
                 low, high = param_space
                 value = np.random.uniform(low, high)
             elif isinstance(param_space, list):
-                # 离散选择
+                # discrete choice
                 value = np.random.choice(param_space)
             else:
-                raise ValueError(f"未知的参数空间类型: {type(param_space)}")
+                raise ValueError(f"Unknown parameter space type: {type(param_space)}")
 
             config[param_name] = value
 
@@ -186,58 +186,61 @@ class HyperparameterSearch:
 
     def _bayesian_suggest(self, trial_id: int) -> Dict[str, Any]:
         """
-        贝叶斯优化（简化版：基于历史结果的高斯采样）
+        Bayesian optimization（Simplified version：Gaussian sampling based on historical results）
 
-        完整实现需要skopt或optuna库，这里提供简化版本
+        Complete implementation needsskoptoroptunaLibrary，A simplified version is available here
         """
         if len(self.trials) < 5:
-            # 前几个试验使用随机搜索
+            # The first few experiments used random searches
             return self._random_suggest(trial_id)
 
-        # 基于最佳试验进行局部搜索
+        # Local search based on best trials
+        if self.best_trial is None:
+            return self._random_suggest(trial_id)
+
         best_config = self.best_trial["config"]
         config = {}
 
         for param_name, param_space in self.search_space.items():
             if isinstance(param_space, tuple):
-                # 连续范围：在最佳值附近采样
+                # continuous range：Sample around the optimal value
                 low, high = param_space
                 best_value = best_config[param_name]
-                std = (high - low) * 0.1  # 标准差为范围的10%
+                std = (high - low) * 0.1  # The standard deviation is the range10%
 
                 value = np.random.normal(best_value, std)
                 value = np.clip(value, low, high)
             elif isinstance(param_space, list):
-                # 离散选择：有80%概率选择最佳值
+                # discrete choice：have80%Probability selects the best value
                 if np.random.random() < 0.8:
                     value = best_config[param_name]
                 else:
                     value = np.random.choice(param_space)
             else:
-                raise ValueError(f"未知的参数空间类型: {type(param_space)}")
+                raise ValueError(f"Unknown parameter space type: {type(param_space)}")
 
             config[param_name] = value
 
         return config
 
     def _generate_grid_configs(self) -> List[Dict[str, Any]]:
-        """生成网格搜索的所有配置"""
+        """Generate all configurations for grid search"""
         import itertools
 
-        # 为每个参数生成候选值
+        # Generate candidate values ​​for each parameter
         param_candidates = {}
         for param_name, param_space in self.search_space.items():
             if isinstance(param_space, tuple):
-                # 连续范围：生成5个候选值
+                # continuous range：generate5candidate values
                 low, high = param_space
                 param_candidates[param_name] = np.linspace(low, high, 5).tolist()
             elif isinstance(param_space, list):
-                # 离散选择：使用所有值
+                # discrete choice：use all values
                 param_candidates[param_name] = param_space
             else:
-                raise ValueError(f"未知的参数空间类型: {type(param_space)}")
+                raise ValueError(f"Unknown parameter space type: {type(param_space)}")
 
-        # 生成所有组合
+        # Generate all combinations
         param_names = list(param_candidates.keys())
         param_values = [param_candidates[name] for name in param_names]
 
@@ -248,14 +251,19 @@ class HyperparameterSearch:
 
         return all_configs
 
-    def record_trial(self, config: Dict[str, Any], score: float, metadata: Dict = None):
+    def record_trial(
+        self,
+        config: Dict[str, Any],
+        score: float,
+        metadata: Dict[str, Any] | None = None,
+    ) -> None:
         """
-        记录试验结果
+        Record test results
 
         Args:
-            config: 超参数配置
-            score: 评分
-            metadata: 额外元数据
+            config: Hyperparameter configuration
+            score: score
+            metadata: additional metadata
         """
         trial = {
             "trial_id": len(self.trials),
@@ -267,39 +275,39 @@ class HyperparameterSearch:
 
         self.trials.append(trial)
 
-        # 更新最佳试验
+        # Update best experiments
         if self.best_trial is None or score > self.best_trial["score"]:
             self.best_trial = trial
-            logger.info(f"✅ 新最佳试验: {score:.4f}")
+            logger.info(f"✅ new best test: {score:.4f}")
 
     def get_best_config(self) -> Optional[Dict[str, Any]]:
-        """获取最佳配置"""
+        """Get the best configuration"""
         if self.best_trial is None:
             return None
         return self.best_trial["config"]
 
     def analyze_importance(self) -> Dict[str, float]:
         """
-        分析超参数重要性
+        Analyze the importance of hyperparameters
 
-        使用简单的方差分析（ANOVA）思想
+        Use simple ANOVA（ANOVA）Thought
 
         Returns:
-            参数重要性得分
+            Parameter importance score
         """
         if len(self.trials) < 10:
-            logger.warning("⚠️ 试验数量不足，无法进行重要性分析")
+            logger.warning("⚠️ Not enough tests，Importance analysis cannot be performed")
             return {}
 
-        importance = {}
+        importance: Dict[str, float] = {}
 
         for param_name in self.search_space.keys():
-            # 按参数值分组
-            groups = {}
+            # Group by parameter value
+            groups: Dict[Any, List[float]] = {}
             for trial in self.trials:
                 value = trial["config"][param_name]
 
-                # 离散化连续值
+                # Discretize continuous values
                 if isinstance(value, float):
                     value = round(value, 4)
 
@@ -307,7 +315,7 @@ class HyperparameterSearch:
                     groups[value] = []
                 groups[value].append(trial["score"])
 
-            # 计算组间方差
+            # Calculate variance between groups
             if len(groups) < 2:
                 importance[param_name] = 0.0
                 continue
@@ -315,22 +323,22 @@ class HyperparameterSearch:
             group_means = [np.mean(scores) for scores in groups.values()]
             overall_mean = np.mean([trial["score"] for trial in self.trials])
 
-            # 组间平方和
+            # sum of squares between groups
             ss_between = sum(
                 len(groups[value]) * (mean - overall_mean) ** 2
                 for value, mean in zip(groups.keys(), group_means)
             )
 
-            # 总平方和
+            # total sum of squares
             ss_total = sum(
                 (trial["score"] - overall_mean) ** 2
                 for trial in self.trials
             )
 
-            # 重要性（解释方差比例）
+            # importance（proportion of explained variance）
             importance[param_name] = ss_between / ss_total if ss_total > 0 else 0.0
 
-        # 归一化
+        # normalization
         total_importance = sum(importance.values())
         if total_importance > 0:
             importance = {k: v / total_importance for k, v in importance.items()}
@@ -340,9 +348,9 @@ class HyperparameterSearch:
 
 class EarlyStopping:
     """
-    早停机制
+    Early stopping mechanism
 
-    当验证指标不再改善时停止训练
+    Stop training when validation metrics no longer improve
     """
 
     def __init__(self,
@@ -350,18 +358,18 @@ class EarlyStopping:
                  min_delta: float = 0.001,
                  mode: str = "max"):
         """
-        初始化早停
+        Initialization early stop
 
         Args:
-            patience: 容忍步数（多少步不改善就停止）
-            min_delta: 最小改善量
-            mode: 模式（max越大越好，min越小越好）
+            patience: Number of steps tolerated（How many steps does it take to stop without improvement?）
+            min_delta: minimum amount of improvement
+            mode: model（maxBigger is better，minThe smaller the better）
         """
         self.patience = patience
         self.min_delta = min_delta
         self.mode = mode
 
-        self.best_score = None
+        self.best_score: float | None = None
         self.counter = 0
         self.early_stop = False
 
@@ -369,13 +377,13 @@ class EarlyStopping:
 
     def check(self, score: float) -> bool:
         """
-        检查是否应该早停
+        Check if it should be stopped early
 
         Args:
-            score: 当前评分
+            score: Current rating
 
         Returns:
-            True表示应该停止
+            TrueIndicates it should stop
         """
         self.history.append(score)
 
@@ -383,7 +391,7 @@ class EarlyStopping:
             self.best_score = score
             return False
 
-        # 检查是否改善
+        # Check if it improves
         if self.mode == "max":
             improved = score > self.best_score + self.min_delta
         else:
@@ -395,16 +403,16 @@ class EarlyStopping:
         else:
             self.counter += 1
 
-        # 检查是否超过容忍度
+        # Check if tolerance is exceeded
         if self.counter >= self.patience:
             self.early_stop = True
-            logger.info(f"⏹️ 早停触发（{self.counter}步未改善）")
+            logger.info(f"⏹️ Early stop trigger（{self.counter}No improvement）")
             return True
 
         return False
 
     def reset(self):
-        """重置早停"""
+        """Reset early stop"""
         self.best_score = None
         self.counter = 0
         self.early_stop = False
@@ -413,13 +421,13 @@ class EarlyStopping:
 
 class HyperparameterTuner:
     """
-    超参数调优器（集成所有功能）
+    Hyperparameter tuner（Integrate all functions）
 
-    完整的自动调参流程：
-    1. 学习率调度
-    2. 超参数搜索
-    3. 早停机制
-    4. 结果分析
+    Complete automatic parameter adjustment process：
+    1. Learning rate scheduling
+    2. Hyperparameter search
+    3. Early stopping mechanism
+    4. Result analysis
     """
 
     def __init__(self,
@@ -428,48 +436,50 @@ class HyperparameterTuner:
                  n_trials: int = 50,
                  patience: int = 10):
         """
-        初始化调优器
+        Initialize the tuner
 
         Args:
-            search_space: 搜索空间
-            search_type: 搜索类型
-            n_trials: 试验次数
-            patience: 早停容忍步数
+            search_space: search space
+            search_type: Search type
+            n_trials: number of trials
+            patience: Early stopping tolerance steps
         """
         self.search = HyperparameterSearch(search_space, search_type, n_trials)
         self.early_stopping = EarlyStopping(patience=patience)
         self.results: List[Dict[str, Any]] = []
 
-    def optimize(self,
-                objective_fn: Callable[[Dict[str, Any]], float],
-                save_dir: str = None) -> Dict[str, Any]:
+    def optimize(
+        self,
+        objective_fn: Callable[[Dict[str, Any]], float],
+        save_dir: str | Path | None = None,
+    ) -> Dict[str, Any]:
         """
-        执行超参数优化
+        Perform hyperparameter optimization
 
         Args:
-            objective_fn: 目标函数（接收超参数配置，返回评分）
-            save_dir: 结果保存目录
+            objective_fn: objective function（Receive hyperparameter configuration，Return to rating）
+            save_dir: Result saving directory
 
         Returns:
-            优化结果
+            Optimize results
         """
-        logger.info(f"🔍 开始超参数搜索（{self.search.n_trials} 次试验）...")
+        logger.info(f"🔍 Start hyperparameter search（{self.search.n_trials} trials）...")
 
         save_path = Path(save_dir) if save_dir else Path("./hyperparameter_tuning_results")
         save_path.mkdir(parents=True, exist_ok=True)
 
         for trial_id in range(self.search.n_trials):
-            # 建议配置
+            # Recommended configuration
             config = self.search.suggest(trial_id)
 
-            logger.info(f"🎲 试验 {trial_id + 1}/{self.search.n_trials}")
-            logger.info(f"   配置: {json.dumps(config, indent=2)}")
+            logger.info(f"🎲 test {trial_id + 1}/{self.search.n_trials}")
+            logger.info(f"   Configuration: {json.dumps(config, indent=2)}")
 
             try:
-                # 评估配置
+                # Evaluate configuration
                 score = objective_fn(config)
 
-                # 记录结果
+                # Record results
                 self.search.record_trial(config, score)
                 self.early_stopping.check(score)
 
@@ -479,25 +489,25 @@ class HyperparameterTuner:
                     "score": score
                 })
 
-                logger.info(f"   评分: {score:.4f}")
+                logger.info(f"   score: {score:.4f}")
 
-                # 保存中间结果
+                # Save intermediate results
                 self._save_intermediate_results(save_path, trial_id)
 
-                # 检查早停
+                # Inspection stopped early
                 if self.early_stopping.early_stop:
-                    logger.info("⏹️ 早停触发，结束搜索")
+                    logger.info("⏹️ Early stop trigger，End search")
                     break
 
             except Exception as e:
-                logger.error(f"❌ 试验 {trial_id} 失败: {e}")
+                logger.error(f"❌ test {trial_id} fail: {e}")
                 continue
 
-        # 分析结果
+        # Analyze results
         return self._analyze_results(save_path)
 
     def _save_intermediate_results(self, save_path: Path, trial_id: int):
-        """保存中间结果"""
+        """Save intermediate results"""
         results_file = save_path / f"intermediate_results_trial_{trial_id}.json"
 
         with open(results_file, 'w') as f:
@@ -508,15 +518,15 @@ class HyperparameterTuner:
             }, f, indent=2)
 
     def _analyze_results(self, save_path: Path) -> Dict[str, Any]:
-        """分析优化结果"""
-        # 获取最佳配置
+        """Analyze optimization results"""
+        # Get the best configuration
         best_config = self.search.get_best_config()
         best_score = self.search.best_trial["score"] if self.search.best_trial else None
 
-        # 分析参数重要性
+        # Analyze parameter importance
         importance = self.search.analyze_importance()
 
-        # 保存最终结果
+        # Save final result
         final_results = {
             "best_config": best_config,
             "best_score": best_score,
@@ -529,25 +539,25 @@ class HyperparameterTuner:
         with open(results_file, 'w') as f:
             json.dump(final_results, f, indent=2)
 
-        logger.info(f"✅ 优化完成！")
-        logger.info(f"   最佳评分: {best_score:.4f}")
-        logger.info(f"   最佳配置: {json.dumps(best_config, indent=2)}")
-        logger.info(f"   参数重要性: {json.dumps(importance, indent=2)}")
-        logger.info(f"   结果已保存: {results_file}")
+        logger.info("✅ Optimization completed！")
+        logger.info(f"   best rating: {best_score:.4f}")
+        logger.info(f"   Best configuration: {json.dumps(best_config, indent=2)}")
+        logger.info(f"   Parameter importance: {json.dumps(importance, indent=2)}")
+        logger.info(f"   Results saved: {results_file}")
 
         return final_results
 
 
 def main():
-    """测试超参数调优器"""
-    # 定义搜索空间
+    """Testing the hyperparameter tuner"""
+    # Define the search space
     search_space = {
         "learning_rate": (0.0001, 0.01),
         "batch_size": [32, 64, 128],
         "hidden_dims": [[64, 64], [128, 128], [256, 256]]
     }
 
-    # 创建调优器
+    # Create a tuner
     tuner = HyperparameterTuner(
         search_space=search_space,
         search_type="random",
@@ -555,13 +565,13 @@ def main():
         patience=5
     )
 
-    # 定义目标函数（模拟）
+    # Define objective function（simulation）
     def objective_fn(config):
-        # 模拟训练过程
+        # Simulation training process
         lr = config["learning_rate"]
         batch_size = config["batch_size"]
 
-        # 模拟评分（越接近最优值越高）
+        # mock scoring（The closer to the optimal value, the higher）
         optimal_lr = 0.001
         optimal_batch = 64
 
@@ -570,12 +580,12 @@ def main():
 
         return (lr_score + batch_score) / 2 + np.random.normal(0, 0.05)
 
-    # 执行优化
+    # Perform optimization
     results = tuner.optimize(objective_fn, save_dir="./tuning_test")
 
-    print(f"\n📊 优化结果:")
-    print(f"   最佳评分: {results['best_score']:.4f}")
-    print(f"   参数重要性: {results['parameter_importance']}")
+    print("\n📊 Optimize results:")
+    print(f"   best rating: {results['best_score']:.4f}")
+    print(f"   Parameter importance: {results['parameter_importance']}")
 
 
 if __name__ == "__main__":

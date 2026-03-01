@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """
-神经网络模型 - 可选PyTorch实现
+neural network model - OptionalPyTorchaccomplish
 
-提供PyTorch版本的策略网络和价值网络，如果PyTorch不可用则降级到NumPy版本
+supplyPyTorchversion of the policy network and value network，ifPyTorchIf unavailable, downgrade toNumPyVersion
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
+from __future__ import annotations
 
-# 尝试导入PyTorch
+import numpy as np
+from typing import Any, Dict, List, Tuple
+
+from .agent import PolicyNetwork as NumpyPolicyNetwork
+from .agent import ValueNetwork as NumpyValueNetwork
+
+# try to importPyTorch
+torch: Any = None
+nn: Any = None
+F: Any = None
+
 try:
     import torch
     import torch.nn as nn
@@ -16,20 +25,21 @@ try:
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
-    torch = None
-    nn = None
-
-from .agent import PolicyNetwork as NumpyPolicyNetwork
-from .agent import ValueNetwork as NumpyValueNetwork
 
 
-class MLPModel(nn.Module):
-    """多层感知机模型"""
+_MLP_BASE: Any = nn.Module if TORCH_AVAILABLE else object
+
+
+class MLPModel(_MLP_BASE):
+    """Multilayer perceptron model"""
 
     def __init__(self, input_dim: int, hidden_dims: List[int], output_dim: int):
-        super(MLPModel, self).__init__()
+        if not TORCH_AVAILABLE:
+            raise RuntimeError("PyTorchNot available，Please useNumPyVersion")
 
-        layers = []
+        super().__init__()
+
+        layers: List[Any] = []
         prev_dim = input_dim
 
         for hidden_dim in hidden_dims:
@@ -38,27 +48,26 @@ class MLPModel(nn.Module):
             prev_dim = hidden_dim
 
         layers.append(nn.Linear(prev_dim, output_dim))
-
         self.network = nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Any) -> Any:
         return self.network(x)
 
 
 class PolicyNetworkPyTorch:
-    """PyTorch策略网络（多头）"""
+    """PyTorchpolicy network（long）"""
 
-    def __init__(self, state_dim: int, action_dim: int, hidden_dims: List[int] = None):
+    def __init__(self, state_dim: int, action_dim: int, hidden_dims: List[int] | None = None):
         """
-        初始化PyTorch策略网络
+        initializationPyTorchpolicy network
 
         Args:
-            state_dim: 状态维度
-            action_dim: 动作维度（应为11）
-            hidden_dims: 隐藏层维度列表
+            state_dim: status dimension
+            action_dim: action dimension（should be11）
+            hidden_dims: Hidden layer dimension list
         """
         if not TORCH_AVAILABLE:
-            raise RuntimeError("PyTorch不可用，请使用NumPy版本")
+            raise RuntimeError("PyTorchNot available，Please useNumPyVersion")
 
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -71,8 +80,8 @@ class PolicyNetworkPyTorch:
             "confirm": 2
         }
 
-        # 共享骨干网络
-        layers = []
+        # shared backbone network
+        layers: List[Any] = []
         prev_dim = state_dim
         for hidden_dim in self.hidden_dims:
             layers.append(nn.Linear(prev_dim, hidden_dim))
@@ -80,25 +89,25 @@ class PolicyNetworkPyTorch:
             prev_dim = hidden_dim
         self.backbone = nn.Sequential(*layers)
 
-        # 多头输出层
+        # multi-head output layer
         self.heads = nn.ModuleDict({
             name: nn.Linear(prev_dim, dim)
             for name, dim in self.head_dims.items()
         })
 
-        # 优化器
+        # optimizer
         self.optimizer = torch.optim.Adam(
             list(self.backbone.parameters()) + list(self.heads.parameters()),
             lr=0.001
         )
 
-    def _forward_logits(self, state_tensor: torch.Tensor) -> Dict[str, torch.Tensor]:
-        """前向传播，获取各头logits"""
+    def _forward_logits(self, state_tensor: Any) -> Dict[str, Any]:
+        """forward propagation，Get each headlogits"""
         features = self.backbone(state_tensor)
         return {name: head(features) for name, head in self.heads.items()}
 
     def get_action_probs(self, state: np.ndarray) -> Dict[str, np.ndarray]:
-        """获取动作概率分布（多头）"""
+        """Get action probability distribution（long）"""
         with torch.no_grad():
             state_tensor = torch.FloatTensor(state)
             logits = self._forward_logits(state_tensor)
@@ -106,7 +115,7 @@ class PolicyNetworkPyTorch:
             return probs
 
     def sample_action(self, state: np.ndarray, explore: bool = True) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
-        """采样动作"""
+        """Sampling action"""
         action_probs = self.get_action_probs(state)
 
         if explore and np.random.random() < 0.1:
@@ -127,18 +136,18 @@ class PolicyNetworkPyTorch:
         return action_indices, action_probs
 
     def update(self, state: np.ndarray, action_indices: np.ndarray, advantage: float) -> float:
-        """更新策略网络"""
+        """Update policy network"""
         state_tensor = torch.FloatTensor(state).unsqueeze(0)
         logits = self._forward_logits(state_tensor)
 
-        # 计算损失（多头累加）
-        loss = 0.0
+        # Calculate losses（Long accumulation）
+        loss: Any = torch.tensor(0.0)
         head_order = ["agent", "automation", "style", "confirm"]
         for head_idx, head_name in enumerate(head_order):
             log_prob = F.log_softmax(logits[head_name], dim=-1)
             loss = loss - log_prob[0, int(action_indices[head_idx])] * advantage
 
-        # 反向传播
+        # Backpropagation
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -146,59 +155,59 @@ class PolicyNetworkPyTorch:
         return float(loss.item())
 
     def save(self, path: str) -> None:
-        """保存模型"""
+        """Save model"""
         torch.save({
             "backbone": self.backbone.state_dict(),
             "heads": self.heads.state_dict()
         }, path)
 
     def load(self, path: str) -> None:
-        """加载模型"""
+        """Load model"""
         state = torch.load(path)
         self.backbone.load_state_dict(state["backbone"])
         self.heads.load_state_dict(state["heads"])
 
 
 class ValueNetworkPyTorch:
-    """PyTorch价值网络"""
+    """PyTorchvalue network"""
 
-    def __init__(self, state_dim: int, hidden_dims: List[int] = None):
+    def __init__(self, state_dim: int, hidden_dims: List[int] | None = None):
         """
-        初始化PyTorch价值网络
+        initializationPyTorchvalue network
 
         Args:
-            state_dim: 状态维度
-            hidden_dims: 隐藏层维度列表
+            state_dim: status dimension
+            hidden_dims: Hidden layer dimension list
         """
         if not TORCH_AVAILABLE:
-            raise RuntimeError("PyTorch不可用，请使用NumPy版本")
+            raise RuntimeError("PyTorchNot available，Please useNumPyVersion")
 
         self.state_dim = state_dim
         self.hidden_dims = hidden_dims or [128, 128]
 
-        # 创建MLP模型（输出1维）
+        # createMLPModel（output1dimension）
         self.model = MLPModel(state_dim, self.hidden_dims, 1)
 
-        # 优化器
+        # optimizer
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
 
     def forward(self, state: np.ndarray) -> float:
-        """前向传播"""
+        """forward propagation"""
         with torch.no_grad():
             state_tensor = torch.FloatTensor(state)
             value = self.model(state_tensor)
             return value.item()
 
     def update(self, state: np.ndarray, target_value: float) -> float:
-        """更新价值网络"""
+        """Update value network"""
         state_tensor = torch.FloatTensor(state).unsqueeze(0)
         value = self.model(state_tensor)
 
-        # 计算损失（MSE）
+        # Calculate losses（MSE）
         target_tensor = torch.FloatTensor([target_value])
         loss = F.mse_loss(value, target_tensor)
 
-        # 反向传播
+        # Backpropagation
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -206,26 +215,29 @@ class ValueNetworkPyTorch:
         return loss.item()
 
     def save(self, path: str) -> None:
-        """保存模型"""
+        """Save model"""
         torch.save(self.model.state_dict(), path)
 
     def load(self, path: str) -> None:
-        """加载模型"""
+        """Load model"""
         self.model.load_state_dict(torch.load(path))
 
 
-def create_policy_network(state_dim: int, action_dim: int,
-                          use_pytorch: bool = True):
+def create_policy_network(
+    state_dim: int,
+    action_dim: int,
+    use_pytorch: bool = True,
+) -> Any:
     """
-    创建策略网络（自动选择PyTorch或NumPy版本）
+    Create a policy network（automatic selectionPyTorchorNumPyVersion）
 
     Args:
-        state_dim: 状态维度
-        action_dim: 动作维度
-        use_pytorch: 是否尝试使用PyTorch
+        state_dim: status dimension
+        action_dim: action dimension
+        use_pytorch: Have you tried usingPyTorch
 
     Returns:
-        策略网络实例
+        Policy Network Example
     """
     if use_pytorch and TORCH_AVAILABLE:
         return PolicyNetworkPyTorch(state_dim, action_dim)
@@ -233,16 +245,16 @@ def create_policy_network(state_dim: int, action_dim: int,
         return NumpyPolicyNetwork(state_dim, action_dim)
 
 
-def create_value_network(state_dim: int, use_pytorch: bool = True):
+def create_value_network(state_dim: int, use_pytorch: bool = True) -> Any:
     """
-    创建价值网络（自动选择PyTorch或NumPy版本）
+    Create a value network（automatic selectionPyTorchorNumPyVersion）
 
     Args:
-        state_dim: 状态维度
-        use_pytorch: 是否尝试使用PyTorch
+        state_dim: status dimension
+        use_pytorch: Have you tried usingPyTorch
 
     Returns:
-        价值网络实例
+        Value Network Example
     """
     if use_pytorch and TORCH_AVAILABLE:
         return ValueNetworkPyTorch(state_dim)
@@ -251,27 +263,27 @@ def create_value_network(state_dim: int, use_pytorch: bool = True):
 
 
 def main():
-    """测试神经网络模型"""
+    """Test neural network models"""
     state_dim = 17
     action_dim = 11
 
-    print(f"PyTorch可用: {TORCH_AVAILABLE}")
+    print(f"PyTorchAvailable: {TORCH_AVAILABLE}")
 
-    # 创建网络
+    # Create network
     policy_net = create_policy_network(state_dim, action_dim)
     value_net = create_value_network(state_dim)
 
-    print(f"✅ 策略网络: {type(policy_net).__name__}")
-    print(f"✅ 价值网络: {type(value_net).__name__}")
+    print(f"✅ policy network: {type(policy_net).__name__}")
+    print(f"✅ value network: {type(value_net).__name__}")
 
-    # 测试前向传播
+    # Test forward propagation
     state = np.random.randn(state_dim)
 
     action_probs = policy_net.get_action_probs(state)
     value = value_net.forward(state)
 
-    print(f"动作概率: {action_probs}")
-    print(f"状态价值: {value:.3f}")
+    print(f"action probability: {action_probs}")
+    print(f"status value: {value:.3f}")
 
 
 if __name__ == "__main__":

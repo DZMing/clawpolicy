@@ -1,39 +1,39 @@
-# 个人配置文件（不应该提交）
+# personal profile（should not be submitted）
 *.bak
 *.backup
 *.backup.*
 personal-settings.json
 user-preferences.json
 
-# 日志文件
+# log file
 logs/
 *.log
 
-# 临时文件
+# temporary files
 tmp/
 temp/
 *.tmp
 
-# 系统文件
+# System files
 .DS_Store
 Thumbs.db
 
-# 编辑器
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# 备份文件
+# Backup files
 backups/*
 !backups/.gitkeep
 !backups/optimization-log.json
 
-# Node modules (如果有)
+# Node modules (if there is)
 node_modules/
 
-# Python (如果有)
+# Python (if there is)
 __pycache__/
 *.py[cod]
 *$py.class
@@ -45,19 +45,19 @@ venv/
 .ruff_cache/
 .pytest_cache/
 
-# 测试覆盖率
+# test coverage
 coverage/
 .nyc_output/
 .coverage*
 htmlcov/
 
-# 构建产物
+# Build product
 dist/
 build/
 *.egg-info/
 pip-wheel-metadata/
 
-# 训练产物
+# training products
 models/**/final/
 models/**/checkpoint_*/
 

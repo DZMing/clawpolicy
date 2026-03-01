@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-OpenClaw集成模块 - 连接数据收集、学习和配置更新
+OpenClaw integration module.
+
+Connects data collection, learning, and config updates.
 """
 
 import json
@@ -13,54 +15,54 @@ from .paths import resolve_config_path, resolve_model_dir
 
 
 class IntentAlignmentEngine:
-    """意图对齐引擎 - 协调数据收集、学习和优化"""
+    """Intent alignment engine for collection, learning, and optimization."""
 
-    def __init__(self, repo_path: str = ".", config_path: str = None):
+    def __init__(self, repo_path: str = ".", config_path: str | Path | None = None):
         self.repo_path = Path(repo_path).resolve()
         self.config_path = resolve_config_path(config_path)
 
-        # 初始化组件
+        # Initialize components
         self.collector = GitPreferenceCollector(str(self.repo_path))
         self.learner = PreferenceLearner(str(self.config_path))
 
     def run_analysis(self, max_commits: int = 100) -> Dict[str, Any]:
-        """运行完整的分析流程"""
-        print("🚀 启动意图对齐分析...")
-        print(f"📂 仓库路径: {self.repo_path}")
+        """Run the full analysis pipeline."""
+        print("🚀 Starting intent alignment analysis...")
+        print(f"📂 Repository path: {self.repo_path}")
         print("")
 
-        # 步骤1: 收集数据
+        # Step 1: Collect data
         git_data = self.collector.collect(max_commits)
 
         if not git_data.get("tech_stack"):
-            print("❌ 没有收集到任何数据")
+            print("❌ No data was collected")
             return {}
 
-        # 步骤2: 学习偏好
+        # Step 2: Learn preferences
         preferences = self.learner.learn_from_git_history(git_data)
 
-        # 步骤3: 保存配置
+        # Step 3: Save config
         self.learner.save_preferences()
 
-        # 步骤4: 生成报告
+        # Step 4: Generate report
         self.learner.generate_report()
 
-        # 步骤5: 显示总结
+        # Step 5: Print summary
         print("\n" + "="*50)
-        print("✅ 分析完成！")
+        print("✅ Analysis complete!")
         print("="*50)
-        print(f"主要发现:")
-        print(f"  - 最常用技术: {preferences['tech_stack']['primary']}")
-        print(f"  - 自动化偏好: {preferences['workflow']['automation_level']}")
-        print(f"  - 置信度: {preferences['metadata']['confidence']*100:.0f}%")
+        print("Highlights:")
+        print(f"  - Primary technology: {preferences['tech_stack']['primary']}")
+        print(f"  - Automation preference: {preferences['workflow']['automation_level']}")
+        print(f"  - Confidence: {preferences['metadata']['confidence']*100:.0f}%")
         print("")
-        print(f"详细报告已保存到: {self.config_path}")
+        print(f"Detailed report saved to: {self.config_path}")
         print("")
 
         return preferences
 
     def get_current_preferences(self) -> Dict[str, Any]:
-        """获取当前学习到的偏好"""
+        """Return currently learned preferences."""
         if not self.config_path.exists():
             return {}
 
@@ -70,11 +72,11 @@ class IntentAlignmentEngine:
         return config.get("learned_preferences", {})
 
     def update_preferences(self, new_data: Dict[str, Any]) -> None:
-        """增量更新偏好"""
+        """Incrementally update preferences."""
         current = self.get_current_preferences()
         current.update(new_data)
 
-        # 保持配置结构稳定，避免覆盖顶层字段
+        # Keep config structure stable to avoid overriding top-level fields
         config: Dict[str, Any]
         if self.config_path.exists():
             with open(self.config_path, 'r') as f:
@@ -88,38 +90,43 @@ class IntentAlignmentEngine:
         with open(self.config_path, 'w') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
 
-        print("✅ 偏好已更新")
+        print("✅ Preferences updated")
 
     def reset_preferences(self) -> None:
-        """重置所有学习数据"""
+        """Reset all learned data."""
         if self.config_path.exists():
             backup = self.config_path.with_suffix('.backup.json')
             self.config_path.rename(backup)
-            print(f"✅ 偏好已重置，备份保存在: {backup}")
+            print(f"✅ Preferences reset, backup saved at: {backup}")
 
 
 class RLAlignmentEngine(IntentAlignmentEngine):
     """
-    强化学习对齐引擎 - 扩展IntentAlignmentEngine
+    RL alignment engine extending IntentAlignmentEngine.
 
-    新增RL在线学习接口：
-    - on_task_start(): 任务开始时获取推荐策略
-    - on_task_complete(): 任务完成时更新模型
+    Adds online RL hooks:
+    - on_task_start(): get recommended strategy
+    - on_task_complete(): update model with task outcome
     """
 
-    def __init__(self, repo_path: str = ".", config_path: str = None, use_rl: bool = True):
+    def __init__(
+        self,
+        repo_path: str = ".",
+        config_path: str | Path | None = None,
+        use_rl: bool = True,
+    ):
         """
-        初始化RL对齐引擎
+        Initialize RL alignment engine.
 
         Args:
-            repo_path: Git仓库路径
-            config_path: 配置文件路径
-            use_rl: 是否使用强化学习
+            repo_path: Git repository path
+            config_path: Config file path
+            use_rl: Whether to enable reinforcement learning
         """
-        # 初始化父类
+        # Initialize base class
         super().__init__(repo_path, config_path)
 
-        # 初始化RL学习器
+        # Initialize RL learner
         self.use_rl = use_rl
         if use_rl:
             self.rl_learner = RLLearner(
@@ -129,55 +136,57 @@ class RLAlignmentEngine(IntentAlignmentEngine):
 
     def on_task_start(self, task_context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        任务开始时调用 - 获取推荐策略
+        Called when a task starts to get a recommended strategy.
 
         Args:
-            task_context: 任务上下文，包含：
-                - task_type: 任务类型
-                - tech_stack: 技术栈
-                - description: 任务描述
+            task_context: Task context, including:
+                - task_type
+                - tech_stack
+                - description
 
         Returns:
-            推荐的策略
+            Recommended strategy
         """
         if not self.use_rl:
             return {}
 
-        # 获取推荐动作
+        # Get recommended action
         recommendation = self.rl_learner.get_recommended_action(task_context)
 
-        print(f"🤖 RL推荐: {recommendation['agent']} | "
-              f"自动化: {recommendation['automation_level']} | "
-              f"风格: {recommendation['communication_style']}")
+        print(
+            f"🤖 RL recommendation: {recommendation['agent']} | "
+            f"automation: {recommendation['automation_level']} | "
+            f"style: {recommendation['communication_style']}"
+        )
 
         return recommendation
 
     def on_task_complete(self, task_context: Dict[str, Any],
                          task_result: Dict[str, Any]) -> Dict[str, Any]:
         """
-        任务完成时调用 - 更新模型
+        Called when a task finishes to update the model.
 
         Args:
-            task_context: 任务上下文
-            task_result: 任务执行结果
+            task_context: Task context
+            task_result: Task execution result
 
         Returns:
-            学习统计
+            Learning stats
         """
         if not self.use_rl:
             return {}
 
-        print(f"📊 正在从任务中学习...")
+        print("📊 Learning from task outcome...")
 
-        # 从任务中学习
+        # Learn from task outcome
         stats = self.rl_learner.learn_from_task(task_context, task_result)
 
-        print(f"✅ 学习完成: 奖励={stats['reward']:.3f}")
+        print(f"✅ Learning done: reward={stats['reward']:.3f}")
 
         return stats
 
     def get_training_progress(self) -> Dict[str, Any]:
-        """获取训练进度"""
+        """Return training progress."""
         if not self.use_rl:
             return {"mode": "statistical"}
 
@@ -193,14 +202,14 @@ class RLAlignmentEngine(IntentAlignmentEngine):
 
 
 def main():
-    """命令行接口"""
+    """Command-line interface."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="意图对齐分析工具")
-    parser.add_argument("--repo", default=".", help="Git仓库路径")
-    parser.add_argument("--commits", type=int, default=100, help="分析的提交数量")
-    parser.add_argument("--reset", action="store_true", help="重置偏好")
-    parser.add_argument("--show", action="store_true", help="显示当前偏好")
+    parser = argparse.ArgumentParser(description="Intent alignment analysis tool")
+    parser.add_argument("--repo", default=".", help="Git repository path")
+    parser.add_argument("--commits", type=int, default=100, help="Number of commits to analyze")
+    parser.add_argument("--reset", action="store_true", help="Reset learned preferences")
+    parser.add_argument("--show", action="store_true", help="Show current preferences")
 
     args = parser.parse_args()
 
