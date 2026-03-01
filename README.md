@@ -55,6 +55,117 @@ openclaw-alignment --help
 
 ## Architecture
 
+### System Flow
+
+```mermaid
+flowchart TB
+    subgraph 用户层
+        A[用户输入意图<br/>User Input]:::input
+    end
+
+    subgraph Commander层[指挥官节点<br/>Commander Node]
+        B[深度分析<br/>Deep Analysis]:::commander
+        C[读取记忆库<br/>Read Memory]
+        C1[USER.md<br/>用户画像]:::memory
+        C2[SOUL.md<br/>系统宪法]:::memory
+        C3[AGENTS.md<br/>工具调度]:::memory
+        D[安全检查<br/>Security Check]:::security
+        E[任务边界定义<br/>Boundary Definition]:::boundary
+    end
+
+    subgraph Executor层[执行者节点<br/>Executor Node]
+        F[接收指令<br/>Receive Command]:::executor
+        G[沙盒验证<br/>Sandbox Testing]:::sandbox
+        G1{验证通过?<br/>Passed?}
+        H[执行任务<br/>Execute Task]:::execute
+        I[高危检测<br/>Risk Detection]:::monitor
+        J[兜底机制<br/>Auto-Healing]:::healing
+        K{触发兜底?<br/>Trigger Healing?}
+        L[阻断执行<br/>Block Execution]:::block
+    end
+
+    subgraph 进化层[闭环进化<br/>Evolution Loop]
+        M[每日备份<br/>Daily Backup]:::backup
+        N[性能分析<br/>Performance Analysis]:::analysis
+        O[更新记忆库<br/>Update Memory]:::update
+        O1[更新 USER.md]:::memory
+        O2[更新 SOUL.md]:::memory
+        O3[更新 AGENTS.md]:::memory
+    end
+
+    subgraph 输出层[结果反馈<br/>Output]
+        P[执行结果<br/>Execution Result]:::output
+        Q[用户反馈<br/>User Feedback]:::feedback
+    end
+
+    %% 主流程
+    A --> B
+    B --> C
+    C --> C1
+    C --> C2
+    C --> C3
+    C1 & C2 & C3 --> D
+    D --> E
+    E --> F
+
+    %% Executor 流程
+    F --> G
+    G --> G1
+    G1 -->|是| H
+    G1 -->|否| L
+
+    H --> I
+    I --> K
+    K -->|是| J
+    K -->|否| P
+
+    J --> P
+
+    %% 进化循环
+    P --> M
+    M --> N
+    N --> O
+    O --> O1
+    O --> O2
+    O --> O3
+
+    %% 反馈循环
+    Q --> A
+
+    %% 样式定义
+    classDef input fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef commander fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef memory fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef security fill:#ffebee,stroke:#c62828,stroke-width:2px
+    classDef boundary fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef executor fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef sandbox fill:#fff9c4,stroke:#f57c00,stroke-width:2px
+    classDef execute fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    classDef monitor fill:#ffe0b2,stroke:#ff6f00,stroke-width:2px
+    classDef healing fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef block fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
+    classDef backup fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
+    classDef analysis fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    classDef update fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    classDef output fill:#fff3e0,stroke:#ff6f00,stroke-width:2px
+    classDef feedback fill:#fce4ec,stroke:#e91e63,stroke-width:2px
+
+    class A input
+    class B commander
+    class C,D,E commander
+    class C1,C2,C3 memory
+    class F,G,G1,H executor
+    class I execute
+    class J monitor
+    class K healing
+    class L block
+    class M backup
+    class N analysis
+    class O,O1,O2,O3 update
+    class P output
+    class Q feedback
+```
+
 ### Core (Phase 1-2)
 
 - `lib/reward.py`: reward calculation engine
