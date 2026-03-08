@@ -4,7 +4,7 @@
 
 **English (Primary)** | **[Chinese (Simplified)](README.zh-CN.md)**
 
-## 3.0.0 Highlights
+## 3.0.1 Highlights
 
 - Policy lifecycle: `hint -> candidate -> confirmed -> suspended -> archived`
 - Canonical local storage: `.clawpolicy/policy/`
@@ -29,7 +29,7 @@ python3 -m pip install "clawpolicy[phase3]"
 ### Source checkout
 
 ```bash
-git clone https://github.com/412984588/clawpolicy.git
+git clone https://github.com/DZMing/clawpolicy.git
 cd clawpolicy
 python3 -m pip install -e ".[dev]"
 ```

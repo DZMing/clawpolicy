@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clawpolicy"
-version = "3.0.0"
+version = "3.0.1"
 description = "Explainable autonomous execution policy engine for ClawPolicy workflows"
 readme = "README.md"
 license = "MIT"
@@ -30,9 +30,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/412984588/clawpolicy"
-Repository = "https://github.com/412984588/clawpolicy"
-Issues = "https://github.com/412984588/clawpolicy/issues"
+Homepage = "https://github.com/DZMing/clawpolicy"
+Repository = "https://github.com/DZMing/clawpolicy"
+Issues = "https://github.com/DZMing/clawpolicy/issues"
 
 [project.optional-dependencies]
 phase3 = [

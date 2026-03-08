@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [3.0.1] - 2026-03-08
+
+### Fixed
+
+- Tightened the public Python surface around `clawpolicy` so docs and examples no longer point at `lib` as a supported import path.
+- Unified policy-state defaults so local workflows consistently center on project-local `.clawpolicy/` behavior.
+- Stopped read-only status flows from implicitly bootstrapping policy directories.
+- Expanded docs consistency coverage so public API and storage-path drift are caught before release.
+- Updated repository metadata and docs links to the canonical `DZMing/clawpolicy` GitHub home.
+
+### Changed
+
+- Released a patch follow-up to the 3.0.0 rename cutover so the published package, docs, and repository metadata stay aligned.
+
 ## [3.0.0] - 2026-03-08
 
 ### Breaking Changes

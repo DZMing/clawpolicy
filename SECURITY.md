@@ -9,7 +9,7 @@
 
 Please report vulnerabilities privately:
 
-- GitHub private advisory: https://github.com/412984588/clawpolicy/security/advisories/new
+- GitHub private advisory: https://github.com/DZMing/clawpolicy/security/advisories/new
 - Security email: not configured (use private advisory link above)
 
 Do **not** open public issues for unpatched vulnerabilities.

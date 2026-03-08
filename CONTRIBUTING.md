@@ -5,7 +5,7 @@ Thanks for contributing to ClawPolicy.
 ## Development Setup
 
 ```bash
-git clone https://github.com/412984588/clawpolicy.git
+git clone https://github.com/DZMing/clawpolicy.git
 cd clawpolicy
 python3 scripts/install.py --dev --editable
 ```

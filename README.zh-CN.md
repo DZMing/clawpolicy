@@ -4,7 +4,7 @@
 
 **[English (Primary)](README.md)** | **中文（简体）**
 
-## 3.0.0 发布重点
+## 3.0.1 发布重点
 
 - 生命周期主链：`hint -> candidate -> confirmed -> suspended -> archived`
 - canonical 本地存储：`.clawpolicy/policy/`
@@ -29,7 +29,7 @@ python3 -m pip install "clawpolicy[phase3]"
 ### 从源码安装
 
 ```bash
-git clone https://github.com/412984588/clawpolicy.git
+git clone https://github.com/DZMing/clawpolicy.git
 cd clawpolicy
 python3 -m pip install -e ".[dev]"
 ```
