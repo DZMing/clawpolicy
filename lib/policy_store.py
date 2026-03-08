@@ -13,9 +13,17 @@ from .policy_models import Playbook, PolicyEvent, Rule
 class PolicyStore:
     """Storage manager for rules, playbooks, and policy events."""
 
-    def __init__(self, base_dir: Path):
+    def __init__(self, base_dir: Path, *, create_if_missing: bool = True):
+        """
+        Initialize PolicyStore.
+
+        Args:
+            base_dir: Base directory for policy storage
+            create_if_missing: If False, don't create directory (for read-only operations)
+        """
         self.base_dir = Path(base_dir)
-        self.base_dir.mkdir(parents=True, exist_ok=True)
+        if create_if_missing:
+            self.base_dir.mkdir(parents=True, exist_ok=True)
 
         self.rules_file = self.base_dir / "rules.json"
         self.playbooks_file = self.base_dir / "playbooks.json"
@@ -23,8 +31,18 @@ class PolicyStore:
 
     @classmethod
     def bootstrap(cls, memory_dir: Path, *, ensure_files: bool = False) -> "PolicyStore":
-        """Open canonical policy storage for one memory directory."""
-        store = cls(Path(memory_dir) / "policy")
+        """
+        Open canonical policy storage for one memory directory.
+
+        Args:
+            memory_dir: Base memory directory
+            ensure_files: If True, create directory and initialize empty files.
+                         If False, don't create directory (for read-only operations).
+
+        Returns:
+            PolicyStore instance. Directory only created if ensure_files=True.
+        """
+        store = cls(Path(memory_dir) / "policy", create_if_missing=ensure_files)
         if ensure_files:
             if not store.rules_file.exists():
                 store.save_rules({})
@@ -47,6 +65,8 @@ class PolicyStore:
 
     @staticmethod
     def _atomic_write_json(path: Path, data: dict[str, Any]) -> None:
+        """Atomically write JSON data, creating parent directory if needed."""
+        path.parent.mkdir(parents=True, exist_ok=True)
         temp_file = path.with_suffix(".tmp")
         temp_file.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         temp_file.replace(path)
@@ -85,6 +105,7 @@ class PolicyStore:
     def append_event(self, event: PolicyEvent) -> None:
         """Append one policy event to canonical event storage."""
         if not self.policy_events_file.exists():
+            self.policy_events_file.parent.mkdir(parents=True, exist_ok=True)
             self.policy_events_file.touch()
         with open(self.policy_events_file, "a", encoding="utf-8") as handle:
             handle.write(event.to_jsonl() + "\n")

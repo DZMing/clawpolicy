@@ -58,3 +58,28 @@ def resolve_model_dir(model_path: Optional[Union[str, Path]] = None) -> Path:
     if model_path:
         return Path(model_path).expanduser()
     return get_default_model_dir()
+
+
+def get_local_config_path(cwd: Optional[Union[str, Path]] = None) -> Path:
+    """Return project-local .clawpolicy/config.json path (3.0.0 default)."""
+    base = Path(cwd or Path.cwd())
+    return base / ".clawpolicy" / "config.json"
+
+
+def resolve_local_config_path(
+    config_path: Optional[Union[str, Path]] = None,
+    cwd: Optional[Union[str, Path]] = None,
+) -> Path:
+    """
+    Resolve config path with project-local default.
+
+    Args:
+        config_path: Explicit config path (takes precedence)
+        cwd: Working directory for project-local default
+
+    Returns:
+        Resolved config path. Uses .clawpolicy/config.json in cwd by default.
+    """
+    if config_path:
+        return Path(config_path).expanduser()
+    return get_local_config_path(cwd)

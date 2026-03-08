@@ -26,8 +26,13 @@ class ConfirmationAPI:
 
     @staticmethod
     def _bootstrap_policy_store(memory_dir: Path) -> PolicyStore:
-        """Create and initialize policy storage files when missing."""
-        return PolicyStore.bootstrap(memory_dir, ensure_files=True)
+        """
+        Create policy storage without creating files (lazy bootstrap).
+
+        Directory and files are only created when needed by write operations.
+        This allows read-only queries to avoid side effects.
+        """
+        return PolicyStore.bootstrap(memory_dir, ensure_files=False)
 
     def should_auto_execute(self, task: dict[str, Any]) -> tuple[bool, str, dict[str, Any]]:
         """Return `(auto_execute, reason, details)` for one task context."""

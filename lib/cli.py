@@ -57,7 +57,7 @@ class ClawPolicyCLI:
             return False
 
         memory_dir.mkdir(parents=True, exist_ok=True)
-        store = self._open_policy_store(cwd)
+        store = self._open_policy_store(cwd, ensure_files=True)
         policy_dir = store.base_dir
 
         if not force and self._has_markdown_seed(memory_dir) and not store.load_rules() and not store.load_playbooks():
@@ -70,6 +70,7 @@ class ClawPolicyCLI:
             store.save_playbooks({})
             print(f"Created: {store.playbooks_file}")
         if force or not store.policy_events_file.exists():
+            store.policy_events_file.parent.mkdir(parents=True, exist_ok=True)
             store.policy_events_file.touch()
             print(f"Created: {store.policy_events_file}")
 

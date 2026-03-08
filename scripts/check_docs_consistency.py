@@ -17,6 +17,19 @@ if str(REPO_ROOT) not in sys.path:
 
 from lib.contracts import ACTION_VECTOR_DIM  # noqa: E402
 
+# Public API exports that should be available from clawpolicy package
+EXPECTED_PUBLIC_API = {
+    "ConfirmationAPI",
+    "PolicyEvent",
+    "PolicyStore",
+    "Playbook",
+    "Rule",
+    "MarkdownToPolicyConverter",
+    "PolicyToMarkdownExporter",
+    "create_api",
+    "__version__",
+}
+
 
 def _extract_first_int(pattern: str, content: str) -> Optional[int]:
     match = re.search(pattern, content)
@@ -128,6 +141,46 @@ def validate_readme_metrics(repo_root: Path, expected_tests: int) -> list[str]:
         errors.append("SECURITY.md is missing the GitHub private advisory link.")
     if advisory_url not in security_zh:
         errors.append("SECURITY.zh-CN.md is missing the GitHub private advisory link.")
+
+    # Check: README should use `from clawpolicy import`, not `from lib import`
+    if "from lib import" in en_content:
+        errors.append(
+            "README.md uses 'from lib import' but should use 'from clawpolicy import'. "
+            "lib is internal implementation, clawpolicy is the public package."
+        )
+    if "from lib import" in zh_content:
+        errors.append(
+            "README.zh-CN.md uses 'from lib import' but should use 'from clawpolicy import'. "
+            "lib is internal implementation, clawpolicy is the public package."
+        )
+
+    # Check: README should mention clawpolicy as the public package
+    if "from clawpolicy import" not in en_content:
+        errors.append(
+            "README.md doesn't show 'from clawpolicy import' example. "
+            "This is the stable public API surface."
+        )
+
+    # Check: clawpolicy/__init__.py should export expected public API
+    try:
+        import clawpolicy
+        actual_exports = set(clawpolicy.__all__)
+        missing_exports = EXPECTED_PUBLIC_API - actual_exports
+        if missing_exports:
+            errors.append(
+                f"clawpolicy/__init__.py missing exports: {missing_exports}. "
+                f"Expected: {EXPECTED_PUBLIC_API}, got: {actual_exports}"
+            )
+    except Exception as e:
+        errors.append(f"Failed to import clawpolicy package: {e}")
+
+    # Check: Default state directory should be .clawpolicy/ consistently
+    state_dir_mentions = re.findall(r"`\.clawpolicy`|\.clawpolicy/|\.clawpolicy\"", en_content)
+    if not state_dir_mentions:
+        errors.append(
+            "README.md doesn't mention '.clawpolicy/' as the canonical state directory. "
+            "This is the 3.0.0 default for local policy storage."
+        )
 
     return errors
 

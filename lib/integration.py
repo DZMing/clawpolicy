@@ -12,7 +12,7 @@ from typing import Dict, Any
 from .collector import GitPreferenceCollector
 from .policy_store import PolicyStore
 from .learner import PreferenceLearner, RLLearner
-from .paths import resolve_config_path, resolve_model_dir
+from .paths import resolve_config_path, resolve_local_config_path, resolve_model_dir
 
 
 class IntentAlignmentEngine:
@@ -20,7 +20,8 @@ class IntentAlignmentEngine:
 
     def __init__(self, repo_path: str = ".", config_path: str | Path | None = None):
         self.repo_path = Path(repo_path).resolve()
-        self.config_path = resolve_config_path(config_path)
+        # Use project-local .clawpolicy/config.json by default (3.0.0 consistency)
+        self.config_path = resolve_local_config_path(config_path, cwd=self.repo_path)
         self.policy_store = PolicyStore.bootstrap(self.config_path.parent)
 
         # Initialize components

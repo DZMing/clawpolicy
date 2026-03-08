@@ -11,16 +11,37 @@ from lib.policy_store import PolicyStore
 
 
 def test_confirmation_api_bootstraps_policy_store_when_missing(tmp_path: Path) -> None:
+    """
+    ConfirmationAPI uses lazy bootstrap - no directories created on init.
+
+    Directories and files are only created when write operations occur.
+    """
     memory_dir = tmp_path / ".clawpolicy"
 
     api = ConfirmationAPI(memory_dir=memory_dir)
 
     assert api.policy_store is not None
     assert not hasattr(api, "gep_store")
+
+    # Lazy bootstrap: init does NOT create directory
+    assert not (memory_dir / "policy").exists()
+
+    # But write operations (like evaluate_task) DO create directory and event file
+    task = {
+        "task_type": "T2",
+        "task_description": "Run tests",
+        "command": "python -m pytest tests/",
+    }
+    api.should_auto_execute(task)  # This writes events via evaluate_task
+
+    # Directory and event file should exist (created by write operation)
     assert (memory_dir / "policy").exists()
-    assert (memory_dir / "policy" / "rules.json").exists()
-    assert (memory_dir / "policy" / "playbooks.json").exists()
     assert (memory_dir / "policy" / "policy_events.jsonl").exists()
+
+    # rules.json and playbooks.json are only created by init() or explicit save operations
+    # They are NOT created by decision evaluation
+    assert not (memory_dir / "policy" / "rules.json").exists()
+    assert not (memory_dir / "policy" / "playbooks.json").exists()
 
 
 def test_confirmation_api_returns_structured_decision_details(tmp_path: Path) -> None:

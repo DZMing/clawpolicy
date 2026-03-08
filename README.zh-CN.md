@@ -69,10 +69,10 @@ python -m clawpolicy policy status
 
 ## 公共 Python API
 
-`lib` 包当前公开的 policy surface：
+`clawpolicy` 包提供稳定的公共 API（`lib` 为内部实现，不应直接导入）：
 
 ```python
-from lib import (
+from clawpolicy import (
     ConfirmationAPI,
     PolicyEvent,
     PolicyStore,
@@ -125,7 +125,7 @@ clawpolicy policy status
 
 ## 测试覆盖
 
-- **Total Tests**: 169
+- **Total Tests**: 183
 - **Local Validation**: `python3 -m pytest tests/ -v`
 - 覆盖范围：生命周期晋升与收权、scope precedence、public surface hard cut、canonical policy storage、CLI supervision、confirmation policy、RL core、可选 Phase 3 模块，以及 docs/contract drift guards
 

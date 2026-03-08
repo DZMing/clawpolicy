@@ -69,10 +69,10 @@ python -m clawpolicy policy status
 
 ## Public Python API
 
-The `lib` package exposes the supported policy-facing surface:
+The `clawpolicy` package exposes the supported policy-facing surface:
 
 ```python
-from lib import (
+from clawpolicy import (
     ConfirmationAPI,
     PolicyEvent,
     PolicyStore,
@@ -125,7 +125,7 @@ clawpolicy policy status
 
 ## Test Coverage
 
-- **Total Tests**: 169
+- **Total Tests**: 183
 - **Local Validation**: `python3 -m pytest tests/ -v`
 - **Coverage Areas**: policy lifecycle promotion and suspension, scope precedence, public surface hard cut, canonical policy storage, CLI supervision, confirmation policy, RL core, optional Phase 3 modules, and docs/contract drift guards
 
