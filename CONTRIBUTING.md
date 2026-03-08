@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for contributing to OpenClaw Alignment.
+Thanks for contributing to ClawPolicy.
 
 ## Development Setup
 
 ```bash
-git clone https://github.com/412984588/openclaw-alignment.git
-cd openclaw-alignment
+git clone https://github.com/412984588/clawpolicy.git
+cd clawpolicy
 python3 scripts/install.py --dev --editable
 ```
 

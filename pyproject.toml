@@ -3,19 +3,19 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "openclaw-alignment"
-version = "2.0.0"
-description = "Explainable autonomous execution policy engine for OpenClaw workflows"
+name = "clawpolicy"
+version = "3.0.0"
+description = "Explainable autonomous execution policy engine for ClawPolicy workflows"
 readme = "README.md"
 license = "MIT"
 authors = [
-  { name = "OpenClaw Alignment Contributors" }
+  { name = "ClawPolicy Contributors" }
 ]
 requires-python = ">=3.10"
 dependencies = [
   "numpy>=1.24"
 ]
-keywords = ["reinforcement-learning", "alignment", "openclaw", "actor-critic"]
+keywords = ["reinforcement-learning", "policy", "clawpolicy", "actor-critic"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -30,9 +30,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/412984588/openclaw-alignment"
-Repository = "https://github.com/412984588/openclaw-alignment"
-Issues = "https://github.com/412984588/openclaw-alignment/issues"
+Homepage = "https://github.com/412984588/clawpolicy"
+Repository = "https://github.com/412984588/clawpolicy"
+Issues = "https://github.com/412984588/clawpolicy/issues"
 
 [project.optional-dependencies]
 phase3 = [
@@ -56,15 +56,14 @@ dev = [
 ]
 
 [project.scripts]
-openclaw-align = "openclaw_align.cli:main"
-openclaw-alignment = "openclaw_align.cli:main"
+clawpolicy = "clawpolicy.cli:main"
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["lib*", "openclaw_align*"]
+include = ["lib*", "clawpolicy*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

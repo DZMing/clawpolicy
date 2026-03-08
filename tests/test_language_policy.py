@@ -24,16 +24,16 @@ def test_readme_primary_is_english_only() -> None:
     assert not _contains_cjk(content), "README.md should be English-only for primary docs"
 
 
-def test_openclaw_align_help_is_english_only() -> None:
+def test_clawpolicy_module_help_is_english_only() -> None:
     result = subprocess.run(
-        ["openclaw-align", "--help"],
+        [sys.executable, "-m", "clawpolicy", "--help"],
         cwd=_repo_root(),
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert not _contains_cjk(result.stdout), "openclaw-align --help should be English-only"
+    assert not _contains_cjk(result.stdout), "python -m clawpolicy --help should be English-only"
 
 
 def test_integration_help_is_english_only() -> None:

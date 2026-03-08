@@ -1,5 +1,5 @@
 """
-OpenClaw Alignment - explainable confirmation and local policy memory.
+ClawPolicy - explainable confirmation and local policy memory.
 
 Phase 1-2: confirmation policy core, local policy memory, and optional RL optimization
 Phase 3: advanced optional modules (distributed training, tuning, monitoring, performance)
@@ -37,7 +37,7 @@ from .confirmation import IntelligentConfirmation, RiskLevel
 from .api import ConfirmationAPI, create_api
 
 # CLI module
-from .cli import OpenClawAlignmentCLI
+from .cli import ClawPolicyCLI
 
 # Optional exports（Injection by dependency availability at runtime）
 MLPModel: Any = None
@@ -171,7 +171,7 @@ __all__ = [
     "JITOptimizer",
     "PerformanceOptimizer",
     # CLI
-    "OpenClawAlignmentCLI",
+    "ClawPolicyCLI",
 ]
 
 
@@ -184,4 +184,4 @@ def __getattr__(name: str) -> Any:
     raise AttributeError(f"module 'lib' has no attribute '{name}'")
 
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"

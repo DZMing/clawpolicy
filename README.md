@@ -1,71 +1,70 @@
-# OpenClaw Alignment
+# ClawPolicy
 
 > Explainable autonomous execution policy engine for low-touch, auditable agent execution
 
 **English (Primary)** | **[Chinese (Simplified)](README.zh-CN.md)**
 
-## 2.0.0 Highlights
+## 3.0.0 Highlights
 
 - Policy lifecycle: `hint -> candidate -> confirmed -> suspended -> archived`
-- Canonical local storage: `.openclaw_memory/policy/`
-- Policy-first supervision CLI: `openclaw-align policy ...`
+- Canonical local storage: `.clawpolicy/policy/`
+- Policy-first supervision CLI: `clawpolicy policy ...`
 - Stable Python API for confirmation, policy storage, and Markdown conversion/export
-- Optional Phase 3 extras remain available through `openclaw-alignment[phase3]`
+- Optional Phase 3 extras remain available through `clawpolicy[phase3]`
 
 ## Installation
 
 ### PyPI
 
 ```bash
-python3 -m pip install openclaw-alignment
+python3 -m pip install clawpolicy
 ```
 
 Optional Phase 3 extras:
 
 ```bash
-python3 -m pip install "openclaw-alignment[phase3]"
+python3 -m pip install "clawpolicy[phase3]"
 ```
 
 ### Source checkout
 
 ```bash
-git clone https://github.com/412984588/openclaw-alignment.git
-cd openclaw-alignment
+git clone https://github.com/412984588/clawpolicy.git
+cd clawpolicy
 python3 -m pip install -e ".[dev]"
 ```
 
 ## CLI Entry Points
 
-- `openclaw-align`: primary console entry point
-- `openclaw-alignment`: compatibility console alias
-- `python -m openclaw_align`: module entry point
+- `clawpolicy`: primary console entry point
+- `python -m clawpolicy`: module entry point
 
 Initialize policy memory and inspect the current lifecycle state:
 
 ```bash
-openclaw-align init
-openclaw-align analyze
-openclaw-align policy status
-openclaw-align policy recent
+clawpolicy init
+clawpolicy analyze
+clawpolicy policy status
+clawpolicy policy recent
 ```
 
 `init` provisions:
 
-- `.openclaw_memory/policy/rules.json`
-- `.openclaw_memory/policy/playbooks.json`
-- `.openclaw_memory/policy/policy_events.jsonl`
-- `.openclaw_memory/USER.md`
-- `.openclaw_memory/SOUL.md`
-- `.openclaw_memory/AGENTS.md`
+- `.clawpolicy/policy/rules.json`
+- `.clawpolicy/policy/playbooks.json`
+- `.clawpolicy/policy/policy_events.jsonl`
+- `.clawpolicy/USER.md`
+- `.clawpolicy/SOUL.md`
+- `.clawpolicy/AGENTS.md`
 
 Low-frequency supervision commands:
 
 ```bash
-openclaw-align policy status
-openclaw-align policy recent
-openclaw-align policy risky
-openclaw-align policy suspended
-python -m openclaw_align policy status
+clawpolicy policy status
+clawpolicy policy recent
+clawpolicy policy risky
+clawpolicy policy suspended
+python -m clawpolicy policy status
 ```
 
 ## Public Python API
@@ -97,8 +96,8 @@ from lib import (
 python3 -m pytest tests/ -v
 python3 scripts/check_docs_consistency.py
 python3 -m ruff check lib tests scripts
-python3 -m openclaw_align policy status
-openclaw-align policy status
+python3 -m clawpolicy policy status
+clawpolicy policy status
 ```
 
 ## Core Modules
@@ -133,7 +132,7 @@ openclaw-align policy status
 ## Release and Versioning
 
 - Versioning: SemVer
-- Current release line: `2.x`
+- Current release line: `3.x`
 - Release runbook: `RELEASING.md` / `RELEASING.zh-CN.md`
 - Changelog: `CHANGELOG.md`
 

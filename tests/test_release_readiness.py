@@ -26,7 +26,16 @@ def test_pyproject_readme_points_to_existing_file() -> None:
 def test_pyproject_exposes_public_cli_entrypoint() -> None:
     repo_root = _repo_root()
     content = (repo_root / "pyproject.toml").read_text(encoding="utf-8")
-    assert 'openclaw-align = "openclaw_align.cli:main"' in content
+    assert 'name = "clawpolicy"' in content
+    assert 'clawpolicy = "clawpolicy.cli:main"' in content
+    scripts_section = re.search(r"^\[project\.scripts\]$(.*?)(^\[|\Z)", content, flags=re.MULTILINE | re.DOTALL)
+    assert scripts_section is not None, "pyproject.toml is missing the project.scripts section."
+    script_lines = [
+        line.strip()
+        for line in scripts_section.group(1).splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    assert script_lines == ['clawpolicy = "clawpolicy.cli:main"']
 
 
 def test_import_lib_works_without_torch_installed() -> None:

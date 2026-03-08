@@ -3,7 +3,7 @@
 Install with:
 
 ```bash
-pip install "openclaw-alignment[phase3]"
+pip install "clawpolicy[phase3]"
 ```
 
 Feature mapping:

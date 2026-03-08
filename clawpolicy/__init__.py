@@ -1,4 +1,4 @@
-"""Public package wrapper for OpenClaw Alignment."""
+"""Public package wrapper for ClawPolicy."""
 
 from lib import __version__
 

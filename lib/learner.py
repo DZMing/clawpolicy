@@ -112,7 +112,7 @@ class PreferenceLearner:
             with open(output_file, 'r') as f:
                 config = json.load(f)
         else:
-            config = {"version": "2.0.0"}
+            config = {"version": "3.0.0"}
 
         # Update configuration
         config.update({

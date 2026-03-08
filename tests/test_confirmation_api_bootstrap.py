@@ -6,12 +6,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from lib.api import ConfirmationAPI
-from lib.cli import OpenClawAlignmentCLI
+from lib.cli import ClawPolicyCLI
 from lib.policy_store import PolicyStore
 
 
 def test_confirmation_api_bootstraps_policy_store_when_missing(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
 
     api = ConfirmationAPI(memory_dir=memory_dir)
 
@@ -24,7 +24,7 @@ def test_confirmation_api_bootstraps_policy_store_when_missing(tmp_path: Path) -
 
 
 def test_confirmation_api_returns_structured_decision_details(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
 
     task = {
@@ -45,7 +45,7 @@ def test_confirmation_api_returns_structured_decision_details(tmp_path: Path) ->
 
 
 def test_confirmation_api_persists_decision_history_with_outcome(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
 
     task = {
@@ -73,7 +73,7 @@ def test_confirmation_api_persists_decision_history_with_outcome(tmp_path: Path)
 
 
 def test_confirmation_api_records_explicit_override_as_policy_candidate(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
 
     task = {
@@ -97,7 +97,7 @@ def test_confirmation_api_records_explicit_override_as_policy_candidate(tmp_path
 
 
 def test_decision_history_cli_shows_recent_trace(tmp_path: Path, capsys) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     task = {
         "task_type": "T2",
@@ -114,7 +114,7 @@ def test_decision_history_cli_shows_recent_trace(tmp_path: Path, capsys) -> None
         execution_result="success",
     )
 
-    cli = OpenClawAlignmentCLI()
+    cli = ClawPolicyCLI()
     import os
 
     original_cwd = os.getcwd()
@@ -131,7 +131,7 @@ def test_decision_history_cli_shows_recent_trace(tmp_path: Path, capsys) -> None
 
 
 def test_status_cli_uses_policy_terminology(tmp_path: Path, capsys) -> None:
-    cli = OpenClawAlignmentCLI()
+    cli = ClawPolicyCLI()
 
     import os
 
@@ -150,7 +150,7 @@ def test_status_cli_uses_policy_terminology(tmp_path: Path, capsys) -> None:
 
 
 def test_policy_status_and_suspended_cli_show_recent_lifecycle(tmp_path: Path, capsys) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     store = PolicyStore(memory_dir / "policy")
     project_scope = str(tmp_path.resolve())
@@ -193,7 +193,7 @@ def test_policy_status_and_suspended_cli_show_recent_lifecycle(tmp_path: Path, c
             execution_result="failure",
         )
 
-    cli = OpenClawAlignmentCLI()
+    cli = ClawPolicyCLI()
     import os
 
     original_cwd = os.getcwd()

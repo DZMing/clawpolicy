@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Reinforcement learning interactive environment - OpenClawinteractive environment
+Reinforcement learning interactive environment - ClawPolicy interactive environment
 
-Define state space and action space，accomplishOpenClawinteractiveOpenAI Gymstyle interface：
+Define state space and action space，accomplish ClawPolicy interactive OpenAI Gymstyle interface：
 - state: task context（task_type, tech_stack, user_moodwait）
 - action: Agentchoose（agent_selection, automation_levelwait）
 - reward: fromreward.RewardCalculatorcalculate
@@ -155,7 +155,7 @@ class Action:
 
 class InteractionEnvironment:
     """
-    OpenClawinteractive environment
+    ClawPolicy interactive environment
 
     accomplishOpenAI Gymstyle environment interface：
     - observation_space: state space dimensions
@@ -480,8 +480,8 @@ def main():
     print(f"Info: {info}")
 
     # save history
-    env.save_history("/tmp/openclaw_env_history.json")
-    print("\nHistory saved to /tmp/openclaw_env_history.json")
+    env.save_history("/tmp/clawpolicy_env_history.json")
+    print("\nHistory saved to /tmp/clawpolicy_env_history.json")
 
 
 if __name__ == "__main__":

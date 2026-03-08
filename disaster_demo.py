@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-OpenClaw Alignment - Disaster Recovery Demonstration
-show scene A（Danger Agent out of control）vs scene B（openclaw-alignment block）
+ClawPolicy - Disaster Recovery Demonstration
+show scene A（Danger Agent out of control）vs scene B（clawpolicy block）
 """
 
 import time
@@ -89,9 +89,9 @@ def scene_a_dangerous_agent():
     time.sleep(2)
 
 
-def scene_b_openclaw_alignment():
-    """scene B: OpenClaw Alignment Blocking and self-healing"""
-    print_header("✅ scene B: Access OpenClaw Alignment（Safety）", "green")
+def scene_b_clawpolicyment():
+    """scene B: ClawPolicy Blocking and self-healing"""
+    print_header("✅ scene B: Access ClawPolicy（Safety）", "green")
 
     # Simulate the user entering the same vague command
     console.print("[bold cyan]$[/bold cyan] clean-workspace --aggressive", end="")
@@ -99,7 +99,7 @@ def scene_b_openclaw_alignment():
     console.print()
 
     console.print()
-    console.print("[dim]🛡️  OpenClaw Alignment Commander Node takeover...[/dim]")
+    console.print("[dim]🛡️  ClawPolicy Commander Node takeover...[/dim]")
     time.sleep(1)
 
     # Commander Node analysis
@@ -194,12 +194,12 @@ def main():
 
     # show title
     console.print()
-    print_header("OpenClaw Alignment - Disaster Recovery Demonstration", "white")
+    print_header("ClawPolicy - Disaster Recovery Demonstration", "white")
 
     console.print(Panel(
         "[bold cyan]This demonstration compares two scenarios：[/bold cyan]\n\n"
         "[bold red]scene A：[/bold red] unprotected Agent Out-of-control execution after receiving ambiguous instructions\n"
-        "[bold green]scene B：[/bold green] Access openclaw-alignment Successfully blocked high-risk operations",
+        "[bold green]scene B：[/bold green] Access clawpolicy Successfully blocked high-risk operations",
         title="[bold white]Demo instructions",
         border_style="white",
         padding=(1, 2)
@@ -225,7 +225,7 @@ def main():
     console.clear()
 
     # scene B
-    scene_b_openclaw_alignment()
+    scene_b_clawpolicyment()
 
     console.print()
     console.print(Panel(
@@ -244,14 +244,14 @@ def main():
             "[bold green]✅ Confirmed implementation of security plan[/bold green]\n\n"
             "[dim]Cleaning cache files...[/dim]\n"
             "[dim]✓ Cleanup completed[/dim]\n\n"
-            "[green]🎉 End of presentation！OpenClaw Alignment Successfully protect your data！[/green]",
+            "[green]🎉 End of presentation！ClawPolicy Successfully protect your data！[/green]",
             border_style="green"
         ))
     else:
         console.print()
         console.print(Panel(
             "[bold yellow]⏹️  Operation canceled[/bold yellow]\n\n"
-            "[green]🎉 End of presentation！OpenClaw Alignment Successfully prevented dangerous operations！[/green]",
+            "[green]🎉 End of presentation！ClawPolicy Successfully prevented dangerous operations！[/green]",
             border_style="yellow"
         ))
 

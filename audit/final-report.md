@@ -19,7 +19,7 @@
   - Command: `python3 -m build && python3 -m twine check dist/*`
   - Result: `sdist/wheel build + metadata check pass`
 - Governance docs in sdist:
-  - Command: `tar -tzf dist/openclaw_alignment-1.0.0.tar.gz | rg \"CONTRIBUTING|SECURITY|SUPPORT|CODE_OF_CONDUCT|RELEASING|CHANGELOG\"`
+  - Command: `tar -tzf dist/clawpolicyment-1.0.0.tar.gz | rg \"CONTRIBUTING|SECURITY|SUPPORT|CODE_OF_CONDUCT|RELEASING|CHANGELOG\"`
   - Result: all required files present
 - Phase3 full deps path:
   - Command: `python3 -m pip install -r requirements-full.txt && python3 -m pytest tests/test_phase3.py -q`

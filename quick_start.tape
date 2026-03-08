@@ -17,7 +17,7 @@ Set Width 1200
 Set Height 600
 
 # Show the command being typed
-Type "openclaw-align init"
+Type "clawpolicy init"
 Enter
 
 # Wait for initialization to complete

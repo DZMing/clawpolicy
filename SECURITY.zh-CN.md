@@ -1,11 +1,13 @@
-# Security Policy (Legacy zh-CN Path)
+# 安全策略
 
-This file path is kept for backward compatibility.
+## 支持版本
 
-Use the primary English policy:
+- `3.0.x`：支持
+- `<3.0.0`：仅尽力支持
 
-- SECURITY.md
+## 漏洞报告
 
-Private vulnerability reporting:
+请私下报告漏洞：
 
-- https://github.com/412984588/openclaw-alignment/security/advisories/new
+- GitHub private advisory: https://github.com/412984588/clawpolicy/security/advisories/new
+- Security email：未配置，请使用上面的私有通道

@@ -2,14 +2,14 @@
 
 ## Supported Versions
 
-- `1.0.x`: supported
-- `<1.0.0`: best effort only
+- `3.0.x`: supported
+- `<3.0.0`: best effort only
 
 ## Reporting a Vulnerability
 
 Please report vulnerabilities privately:
 
-- GitHub private advisory: https://github.com/412984588/openclaw-alignment/security/advisories/new
+- GitHub private advisory: https://github.com/412984588/clawpolicy/security/advisories/new
 - Security email: not configured (use private advisory link above)
 
 Do **not** open public issues for unpatched vulnerabilities.

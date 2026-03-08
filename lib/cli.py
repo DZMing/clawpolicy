@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OpenClaw Alignment command-line interface."""
+"""ClawPolicy command-line interface."""
 
 from __future__ import annotations
 
@@ -17,11 +17,11 @@ from .policy_store import PolicyStore
 from .policy_to_md import PolicyToMarkdownExporter
 
 
-class OpenClawAlignmentCLI:
-    """Main OpenClaw Alignment CLI class."""
+class ClawPolicyCLI:
+    """Main ClawPolicy CLI class."""
 
     def __init__(self) -> None:
-        self.memory_dir_name = ".openclaw_memory"
+        self.memory_dir_name = ".clawpolicy"
         self.config_file_name = "config.json"
         self.templates = {
             "USER.md": "USER_template.md",
@@ -86,7 +86,7 @@ class OpenClawAlignmentCLI:
         config_file = memory_dir / self.config_file_name
         if force or not config_file.exists():
             config = {
-                "version": "2.0.0",
+                "version": "3.0.0",
                 "initialized_at": datetime.now(timezone.utc).isoformat(),
                 "initialized_in": str(cwd),
                 "memory_path": str(memory_dir),
@@ -102,7 +102,7 @@ class OpenClawAlignmentCLI:
         gitignore_file = memory_dir / ".gitignore"
         if force or not gitignore_file.exists():
             gitignore_file.write_text(
-                "# OpenClaw Alignment local files\n"
+                "# ClawPolicy local files\n"
                 "# Do not commit these files\n"
                 "config.json\n"
                 "*.backup\n"
@@ -126,7 +126,7 @@ class OpenClawAlignmentCLI:
         policy_dir = store.base_dir
         config_file = memory_dir / self.config_file_name
 
-        print("OpenClaw Alignment status")
+        print("ClawPolicy status")
         print("")
         print(f"Policy memory: {memory_dir}")
         print(f"Status: {'present' if memory_dir.exists() else 'missing'}")
@@ -147,7 +147,7 @@ class OpenClawAlignmentCLI:
     def version(self) -> None:
         from . import __version__
 
-        print(f"OpenClaw Alignment CLI v{__version__}")
+        print(f"ClawPolicy CLI v{__version__}")
 
     def rule_list(self) -> None:
         store = self._open_policy_store()
@@ -312,7 +312,7 @@ class OpenClawAlignmentCLI:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="OpenClaw Alignment - explainable autonomous execution policy engine",
+        description="ClawPolicy - explainable autonomous execution policy engine",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="store_true", help="Show version information")
@@ -365,7 +365,7 @@ def main() -> None:
     execute_parser.add_argument("--description", default="run tests", help="Task description")
 
     args = parser.parse_args()
-    cli = OpenClawAlignmentCLI()
+    cli = ClawPolicyCLI()
 
     if args.version:
         cli.version()

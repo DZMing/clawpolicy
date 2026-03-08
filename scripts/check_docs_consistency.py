@@ -123,7 +123,7 @@ def validate_readme_metrics(repo_root: Path, expected_tests: int) -> list[str]:
 
     security_en = (repo_root / "SECURITY.md").read_text(encoding="utf-8")
     security_zh = (repo_root / "SECURITY.zh-CN.md").read_text(encoding="utf-8")
-    advisory_url = "https://github.com/412984588/openclaw-alignment/security/advisories/new"
+    advisory_url = "https://github.com/412984588/clawpolicy/security/advisories/new"
     if advisory_url not in security_en:
         errors.append("SECURITY.md is missing the GitHub private advisory link.")
     if advisory_url not in security_zh:

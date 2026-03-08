@@ -586,8 +586,8 @@ def main():
         print(f"  Criticloss: {stats['critic_loss']:.4f}")
 
     # Save model
-    agent.save_model("/tmp/openclaw_rl_agent")
-    print("\nModel saved to /tmp/openclaw_rl_agent")
+    agent.save_model("/tmp/clawpolicy_rl_agent")
+    print("\nModel saved to /tmp/clawpolicy_rl_agent")
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/openclaw-alignment
+      url: https://pypi.org/p/clawpolicy
     permissions:
       id-token: write
     steps:

@@ -1,4 +1,4 @@
-"""Module entry point for `python -m openclaw_align`."""
+"""Module entry point for `python -m clawpolicy`."""
 
 from .cli import main
 

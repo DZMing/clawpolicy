@@ -32,7 +32,7 @@ def test_policy_store_uses_canonical_files(tmp_path: Path) -> None:
 
 
 def test_policy_store_bootstrap_provisions_canonical_files(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
 
     store = PolicyStore.bootstrap(memory_dir, ensure_files=True)
 

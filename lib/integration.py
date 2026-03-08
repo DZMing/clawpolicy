@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OpenClaw integration module.
+ClawPolicy integration module.
 
 Connects data collection, learning, and config updates.
 """
@@ -99,7 +99,7 @@ class IntentAlignmentEngine:
             with open(self.config_path, 'r') as f:
                 config = json.load(f)
         else:
-            config = {"version": "2.0.0"}
+            config = {"version": "3.0.0"}
 
         config["learned_preferences"] = current
 

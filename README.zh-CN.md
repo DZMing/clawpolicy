@@ -1,71 +1,70 @@
-# OpenClaw Alignment
+# ClawPolicy
 
 > 面向低人工介入场景的可解释自治执行策略引擎
 
 **[English (Primary)](README.md)** | **中文（简体）**
 
-## 2.0.0 发布重点
+## 3.0.0 发布重点
 
 - 生命周期主链：`hint -> candidate -> confirmed -> suspended -> archived`
-- canonical 本地存储：`.openclaw_memory/policy/`
-- 主监督 CLI：`openclaw-align policy ...`
+- canonical 本地存储：`.clawpolicy/policy/`
+- 主监督 CLI：`clawpolicy policy ...`
 - 对外 Python API 已收敛到 confirmation、policy storage、Markdown conversion/export
-- 可选 Phase 3 依赖仍通过 `openclaw-alignment[phase3]` 提供
+- 可选 Phase 3 依赖仍通过 `clawpolicy[phase3]` 提供
 
 ## 安装
 
 ### PyPI
 
 ```bash
-python3 -m pip install openclaw-alignment
+python3 -m pip install clawpolicy
 ```
 
 可选 Phase 3 依赖：
 
 ```bash
-python3 -m pip install "openclaw-alignment[phase3]"
+python3 -m pip install "clawpolicy[phase3]"
 ```
 
 ### 从源码安装
 
 ```bash
-git clone https://github.com/412984588/openclaw-alignment.git
-cd openclaw-alignment
+git clone https://github.com/412984588/clawpolicy.git
+cd clawpolicy
 python3 -m pip install -e ".[dev]"
 ```
 
 ## CLI 入口
 
-- `openclaw-align`：主控制台入口
-- `openclaw-alignment`：兼容别名
-- `python -m openclaw_align`：模块入口
+- `clawpolicy`：主控制台入口
+- `python -m clawpolicy`：模块入口
 
 初始化并查看当前 policy 状态：
 
 ```bash
-openclaw-align init
-openclaw-align analyze
-openclaw-align policy status
-openclaw-align policy recent
+clawpolicy init
+clawpolicy analyze
+clawpolicy policy status
+clawpolicy policy recent
 ```
 
 `init` 会生成：
 
-- `.openclaw_memory/policy/rules.json`
-- `.openclaw_memory/policy/playbooks.json`
-- `.openclaw_memory/policy/policy_events.jsonl`
-- `.openclaw_memory/USER.md`
-- `.openclaw_memory/SOUL.md`
-- `.openclaw_memory/AGENTS.md`
+- `.clawpolicy/policy/rules.json`
+- `.clawpolicy/policy/playbooks.json`
+- `.clawpolicy/policy/policy_events.jsonl`
+- `.clawpolicy/USER.md`
+- `.clawpolicy/SOUL.md`
+- `.clawpolicy/AGENTS.md`
 
 低频监督命令：
 
 ```bash
-openclaw-align policy status
-openclaw-align policy recent
-openclaw-align policy risky
-openclaw-align policy suspended
-python -m openclaw_align policy status
+clawpolicy policy status
+clawpolicy policy recent
+clawpolicy policy risky
+clawpolicy policy suspended
+python -m clawpolicy policy status
 ```
 
 ## 公共 Python API
@@ -97,8 +96,8 @@ from lib import (
 python3 -m pytest tests/ -v
 python3 scripts/check_docs_consistency.py
 python3 -m ruff check lib tests scripts
-python3 -m openclaw_align policy status
-openclaw-align policy status
+python3 -m clawpolicy policy status
+clawpolicy policy status
 ```
 
 ## 核心模块
@@ -133,7 +132,7 @@ openclaw-align policy status
 ## 发布与版本
 
 - Versioning：SemVer
-- 当前发布线：`2.x`
+- 当前发布线：`3.x`
 - Release runbook：`RELEASING.md` / `RELEASING.zh-CN.md`
 - Changelog：`CHANGELOG.md`
 

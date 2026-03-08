@@ -5,7 +5,7 @@ description: Learn workflow preferences and optimize collaboration behavior
 
 # Intent Alignment Skill
 
-This skill helps OpenClaw adapt to your working style by learning from task outcomes, workflow choices, and feedback loops.
+This skill helps ClawPolicy adapt to your working style by learning from task outcomes, workflow choices, and feedback loops.
 
 ## Capabilities
 

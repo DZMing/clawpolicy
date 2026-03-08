@@ -145,7 +145,7 @@ class DistributedTrainer:
 
         try:
             probe_app = Celery(
-                'openclaw_alignment_probe',
+                'clawpolicy_probe',
                 broker=self.config.broker_url,
                 backend=self.config.result_backend
             )
@@ -173,7 +173,7 @@ class DistributedTrainer:
 
         # initializationCeleryapplication
         self.celery_app = Celery(
-            'openclaw_alignment',
+            'clawpolicy',
             broker=self.config.broker_url,
             backend=self.config.result_backend
         )

@@ -15,7 +15,7 @@ class ConfirmationAPI:
 
     def __init__(self, memory_dir: Path | None = None):
         if memory_dir is None:
-            memory_dir = Path.cwd() / ".openclaw_memory"
+            memory_dir = Path.cwd() / ".clawpolicy"
 
         self.memory_dir = Path(memory_dir)
         self.policy_store = self._bootstrap_policy_store(self.memory_dir)

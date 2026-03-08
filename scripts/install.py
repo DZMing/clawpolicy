@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-platform installer for OpenClaw Alignment."""
+"""Cross-platform installer for ClawPolicy."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def run(cmd: list[str]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Install OpenClaw Alignment")
+    parser = argparse.ArgumentParser(description="Install ClawPolicy")
     parser.add_argument("--phase3", action="store_true", help="Install optional phase3 dependencies")
     parser.add_argument("--dev", action="store_true", help="Install development dependencies")
     parser.add_argument("--editable", action="store_true", help="Install package in editable mode")

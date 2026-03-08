@@ -1,4 +1,4 @@
-# VHS Tape File for OpenClaw Alignment Disaster Demo
+# VHS Tape File for ClawPolicy Disaster Demo
 # Output configuration
 Output demo.gif
 

@@ -16,7 +16,7 @@ def _iso(minutes: int = 0) -> str:
 
 
 def test_explicit_correction_creates_candidate_rule(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     task = {
         "task_type": "T2",
@@ -42,7 +42,7 @@ def test_explicit_correction_creates_candidate_rule(tmp_path: Path) -> None:
 
 
 def test_candidate_promotes_after_gate_when_evidence_is_strong(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     task = {
         "task_type": "T2",
@@ -69,7 +69,7 @@ def test_candidate_promotes_after_gate_when_evidence_is_strong(tmp_path: Path) -
 
 
 def test_same_scope_newer_confirmed_rule_wins(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     project_scope = str(tmp_path.resolve())
     store = PolicyStore(memory_dir / "policy")
@@ -123,7 +123,7 @@ def test_same_scope_newer_confirmed_rule_wins(tmp_path: Path) -> None:
 
 
 def test_high_risk_candidate_does_not_confirm_from_statistics_only(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     project_scope = str(tmp_path.resolve())
     store = PolicyStore(memory_dir / "policy")
@@ -175,7 +175,7 @@ def test_high_risk_candidate_does_not_confirm_from_statistics_only(tmp_path: Pat
 
 
 def test_domain_confirmed_rule_overrides_global_when_project_rule_missing(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     store = PolicyStore(memory_dir / "policy")
 
@@ -229,7 +229,7 @@ def test_domain_confirmed_rule_overrides_global_when_project_rule_missing(tmp_pa
 
 
 def test_confirmed_rule_suspends_after_repeated_auto_execute_failures(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     project_scope = str(tmp_path.resolve())
     store = PolicyStore(memory_dir / "policy")
@@ -279,7 +279,7 @@ def test_confirmed_rule_suspends_after_repeated_auto_execute_failures(tmp_path: 
 
 
 def test_suspended_rule_reactivates_to_candidate_after_explicit_reapproval(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     project_scope = str(tmp_path.resolve())
     store = PolicyStore(memory_dir / "policy")
@@ -330,7 +330,7 @@ def test_suspended_rule_reactivates_to_candidate_after_explicit_reapproval(tmp_p
 
 
 def test_rollback_immediately_suspends_confirmed_auto_rule(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     project_scope = str(tmp_path.resolve())
     store = PolicyStore(memory_dir / "policy")
@@ -378,7 +378,7 @@ def test_rollback_immediately_suspends_confirmed_auto_rule(tmp_path: Path) -> No
 
 
 def test_ambiguous_same_scope_conflict_requires_confirmation(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     project_scope = str(tmp_path.resolve())
     store = PolicyStore(memory_dir / "policy")
@@ -433,7 +433,7 @@ def test_ambiguous_same_scope_conflict_requires_confirmation(tmp_path: Path) -> 
 
 
 def test_suspended_rule_archives_when_superseded_by_new_confirmed_rule(tmp_path: Path) -> None:
-    memory_dir = tmp_path / ".openclaw_memory"
+    memory_dir = tmp_path / ".clawpolicy"
     api = ConfirmationAPI(memory_dir=memory_dir)
     project_scope = str(tmp_path.resolve())
     store = PolicyStore(memory_dir / "policy")

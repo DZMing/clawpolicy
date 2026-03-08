@@ -11,14 +11,14 @@ from shutil import rmtree
 
 import pytest
 
-from lib.cli import OpenClawAlignmentCLI
+from lib.cli import ClawPolicyCLI
 from lib.md_to_policy import MarkdownToPolicyConverter
 from lib.policy_store import PolicyStore
 from lib.policy_to_md import PolicyToMarkdownExporter
 
 
 class TestCLIInit:
-    """Tests for `openclaw-align init`."""
+    """Tests for `clawpolicy init`."""
 
     @pytest.fixture
     def temp_dir(self) -> Path:
@@ -28,8 +28,8 @@ class TestCLIInit:
             rmtree(temp_dir)
 
     def test_init_creates_policy_files(self, temp_dir: Path) -> None:
-        cli = OpenClawAlignmentCLI()
-        cli.memory_dir_name = ".openclaw_memory_test"
+        cli = ClawPolicyCLI()
+        cli.memory_dir_name = ".clawpolicy_test"
 
         import os
 
@@ -49,8 +49,8 @@ class TestCLIInit:
             os.chdir(original_cwd)
 
     def test_init_writes_timestamp_and_working_directory_fields(self, temp_dir: Path) -> None:
-        cli = OpenClawAlignmentCLI()
-        cli.memory_dir_name = ".openclaw_memory_test"
+        cli = ClawPolicyCLI()
+        cli.memory_dir_name = ".clawpolicy_test"
 
         import os
 
@@ -72,8 +72,8 @@ class TestCLIInit:
             os.chdir(original_cwd)
 
     def test_init_auto_migrates_markdown_into_policy_assets(self, temp_dir: Path) -> None:
-        cli = OpenClawAlignmentCLI()
-        cli.memory_dir_name = ".openclaw_memory_test"
+        cli = ClawPolicyCLI()
+        cli.memory_dir_name = ".clawpolicy_test"
 
         import os
 
