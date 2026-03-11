@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- Added `LICENSE_SOURCE_OF_TRUTH.md` to formally declare GitHub as the canonical code/license source and ClawHub as a derivative distribution surface.
+- Added release tooling for manual ClawHub publish and local/GitHub/ClawHub consistency checks.
+
+### Changed
+
+- Updated README and release documentation to codify GitHub-first release truth for ClawPolicy distributions.
+
 ## [3.0.2] - 2026-03-11
 
 ### Fixed

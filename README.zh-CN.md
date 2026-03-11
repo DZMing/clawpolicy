@@ -129,6 +129,14 @@ clawpolicy policy status
 - **Local Validation**: `python3 -m pytest tests/ -v`
 - 覆盖范围：生命周期晋升与收权、scope precedence、public surface hard cut、canonical policy storage、CLI supervision、confirmation policy、RL core、可选 Phase 3 模块，以及 docs/contract drift guards
 
+## Canonical 真相源
+
+- **代码与 license 的 canonical source**：`https://github.com/DZMing/clawpolicy`
+- **仓库授权真相**：`MIT`（见 [`LICENSE`](LICENSE) 与 [`LICENSE_SOURCE_OF_TRUTH.md`](LICENSE_SOURCE_OF_TRUTH.md)）
+- **ClawHub 的角色**：分发/展示面，不是仓库代码 license 的最终法律真相源
+
+若 ClawHub 展示元数据与仓库不一致，应以 GitHub 仓库中的源码、LICENSE 与发布标签为准。
+
 ## 发布与版本
 
 - Versioning：SemVer

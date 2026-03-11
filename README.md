@@ -129,6 +129,14 @@ clawpolicy policy status
 - **Local Validation**: `python3 -m pytest tests/ -v`
 - **Coverage Areas**: policy lifecycle promotion and suspension, scope precedence, public surface hard cut, canonical policy storage, CLI supervision, confirmation policy, RL core, optional Phase 3 modules, and docs/contract drift guards
 
+## Canonical Source of Truth
+
+- **Canonical code and license source**: `https://github.com/DZMing/clawpolicy`
+- **Canonical repository license**: `MIT` (see [`LICENSE`](LICENSE) and [`LICENSE_SOURCE_OF_TRUTH.md`](LICENSE_SOURCE_OF_TRUTH.md))
+- **ClawHub role**: distribution/discovery listing, not the authoritative legal source for repository licensing
+
+If any ClawHub listing metadata drifts from the repository, the GitHub repository remains authoritative for code provenance, license, and release truth.
+
 ## Release and Versioning
 
 - Versioning: SemVer
