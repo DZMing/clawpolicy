@@ -4,7 +4,7 @@
 
 **English (Primary)** | **[Chinese (Simplified)](README.zh-CN.md)**
 
-## 3.0.1 Highlights
+## 3.0.2 Highlights
 
 - Policy lifecycle: `hint -> candidate -> confirmed -> suspended -> archived`
 - Canonical local storage: `.clawpolicy/policy/`

@@ -4,7 +4,7 @@
 
 **[English (Primary)](README.md)** | **中文（简体）**
 
-## 3.0.1 发布重点
+## 3.0.2 发布重点
 
 - 生命周期主链：`hint -> candidate -> confirmed -> suspended -> archived`
 - canonical 本地存储：`.clawpolicy/policy/`

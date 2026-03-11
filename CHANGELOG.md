@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [3.0.2] - 2026-03-11
+
+### Fixed
+
+- Realigned repository metadata, release docs, and public package wording with the canonical ClawPolicy positioning: an explainable autonomous execution policy engine for low-touch, auditable agent execution.
+- Prepared the GitHub source of truth to match the corrected ClawHub 3.0.2 publish payload and install/verification instructions.
+
+### Changed
+
+- Bumped the release line from 3.0.1 to 3.0.2 across package metadata, README surfaces, docs headings, and embedded version strings so GitHub and distribution metadata stay in sync.
+
 ## [3.0.1] - 2026-03-08
 
 ### Fixed

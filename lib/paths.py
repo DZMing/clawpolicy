@@ -61,7 +61,7 @@ def resolve_model_dir(model_path: Optional[Union[str, Path]] = None) -> Path:
 
 
 def get_local_config_path(cwd: Optional[Union[str, Path]] = None) -> Path:
-    """Return project-local .clawpolicy/config.json path (3.0.1 default)."""
+    """Return project-local .clawpolicy/config.json path (3.0.2 default)."""
     base = Path(cwd or Path.cwd())
     return base / ".clawpolicy" / "config.json"
 

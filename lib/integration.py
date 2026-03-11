@@ -20,7 +20,7 @@ class IntentAlignmentEngine:
 
     def __init__(self, repo_path: str = ".", config_path: str | Path | None = None):
         self.repo_path = Path(repo_path).resolve()
-        # Use project-local .clawpolicy/config.json by default (3.0.1 consistency)
+        # Use project-local .clawpolicy/config.json by default (3.0.2 consistency)
         self.config_path = resolve_local_config_path(config_path, cwd=self.repo_path)
         self.policy_store = PolicyStore.bootstrap(self.config_path.parent)
 
@@ -100,7 +100,7 @@ class IntentAlignmentEngine:
             with open(self.config_path, 'r') as f:
                 config = json.load(f)
         else:
-            config = {"version": "3.0.1"}
+            config = {"version": "3.0.2"}
 
         config["learned_preferences"] = current
 

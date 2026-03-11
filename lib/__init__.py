@@ -184,4 +184,4 @@ def __getattr__(name: str) -> Any:
     raise AttributeError(f"module 'lib' has no attribute '{name}'")
 
 
-__version__ = "3.0.1"
+__version__ = "3.0.2"

@@ -87,7 +87,7 @@ class ClawPolicyCLI:
         config_file = memory_dir / self.config_file_name
         if force or not config_file.exists():
             config = {
-                "version": "3.0.1",
+                "version": "3.0.2",
                 "initialized_at": datetime.now(timezone.utc).isoformat(),
                 "initialized_in": str(cwd),
                 "memory_path": str(memory_dir),

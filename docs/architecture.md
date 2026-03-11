@@ -1,6 +1,6 @@
 # Architecture
 
-## 3.0.1 Core Flow (Policy-First)
+## 3.0.2 Core Flow (Policy-First)
 
 1. **Init**: `clawpolicy init` creates `.clawpolicy/policy/` with canonical storage
 2. **Import**: `MarkdownToPolicyConverter` migrates USER/SOUL/AGENTS.md → policy assets
@@ -25,7 +25,7 @@ archived (归档)
 
 ## Module Layers
 
-### Policy Core (Primary 3.0.1 Surface)
+### Policy Core (Primary 3.0.2 Surface)
 
 - `policy_models.py`: canonical `Rule`, `Playbook`, `PolicyEvent`
 - `policy_store.py`: canonical policy asset persistence

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clawpolicy"
-version = "3.0.1"
-description = "Explainable autonomous execution policy engine for ClawPolicy workflows"
+version = "3.0.2"
+description = "Explainable autonomous execution policy engine for low-touch, auditable agent execution"
 readme = "README.md"
 license = "MIT"
 authors = [

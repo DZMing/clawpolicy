@@ -179,7 +179,7 @@ def validate_readme_metrics(repo_root: Path, expected_tests: int) -> list[str]:
     if not state_dir_mentions:
         errors.append(
             "README.md doesn't mention '.clawpolicy/' as the canonical state directory. "
-            "This is the 3.0.1 default for local policy storage."
+            "This is the 3.0.2 default for local policy storage."
         )
 
     return errors
